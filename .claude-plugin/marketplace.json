@@ -1,0 +1,24 @@
+{
+  "name": "sachith-skills",
+  "owner": {
+    "name": "Sachith Gunasekara",
+    "email": "sachithgunasekara7@gmail.com",
+    "url": "https://github.com/sachith-gunasekara"
+  },
+  "metadata": {
+    "description": "Agent skills by Sachith Gunasekara.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sachith-skills",
+      "source": "./",
+      "description": "Agent skills by Sachith Gunasekara. Currently: conventional-commits (Conventional Commits v1.0.0 messages with Jira issue-key trailers).",
+      "version": "0.1.0",
+      "author": { "name": "Sachith Gunasekara" },
+      "homepage": "https://github.com/sachith-gunasekara/skills",
+      "license": "MIT",
+      "keywords": ["skills", "git", "conventional-commits", "jira"]
+    }
+  ]
+}
