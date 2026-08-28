@@ -70,14 +70,19 @@ message is non-trivial, show the user, then run for real. Other flags:
 `--breaking "<description>"`, `--footer "Reviewed-by: Ana"`, `--trailer-key Ticket`,
 `--amend`, `--all`, `--type-list`.
 
+Pass `--body` as one unbroken paragraph — the script wraps it at 72 columns (`--wrap
+<n>` to change it, `--no-wrap` to leave it alone), keeping code fences, list items,
+indented lines and long URLs intact. Repeat `--body` for each paragraph rather than
+embedding blank lines.
+
 ### 6. Verify
 
 ```bash
 scripts/validate-message.sh HEAD
 ```
 
-Checks structure, type, header length, blank-line separation, footer/trailer form,
-and Jira key presence. Run it after committing, and use it on its own when the
+Checks structure, type, header length, body line width, blank-line separation,
+footer/trailer form, and Jira key presence. Run it after committing, and use it on its own when the
 task is "is this message any good?" or "fix my last commit message".
 
 ## Message format
@@ -94,8 +99,9 @@ task is "is this message any good?" or "fix my last commit message".
   Lowercase type, imperative mood, no trailing period, aim for ≤72 characters.
   Write it as the completion of "if applied, this commit will _____".
 - **Body** — starts one blank line after the header, free-form paragraphs, wrapped
-  around 72–100 columns. Explain *why*, and what a reviewer couldn't infer from the
-  diff. Skip it entirely for changes that are self-evident.
+  around 72–100 columns (`commit.sh` does this for you). Explain *why*, and what a
+  reviewer couldn't infer from the diff. Skip it entirely for changes that are
+  self-evident.
 - **Footers** — one blank line after the body. Each is a git trailer: a token using
   `-` for spaces, then `: ` or ` #`, then a value. `BREAKING CHANGE` is the one
   token allowed to contain a space, and it must be uppercase.
@@ -227,6 +233,10 @@ Refs: PROJ-482
   containing whitespace**, and silently mangle `BREAKING CHANGE:` into
   `BREAKING CHANGE: <value>: `. Don't route that footer through them — `commit.sh`
   writes the footer block directly for this reason.
+- Only the body wraps. A trailer must stay on one line or git stops parsing it as a
+  trailer, so an over-long `Reviewed-by:` gets shortened, not folded. `BREAKING
+  CHANGE:` is the exception — its spaced token already defeats git's parser, so
+  `commit.sh` wraps it with indented continuation lines.
 - Mixed-convention repos are common. When history is inconsistent, follow the last
   ~30 commits rather than the oldest ones, and say which pattern you followed.
 

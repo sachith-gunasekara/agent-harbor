@@ -16,6 +16,8 @@
 #   --trailer-key <t> footer token for the Jira key (Refs, Ticket, Jira, Issue...)
 #   --footer "K: V"   any extra trailer; repeatable
 #   --smart-commit "<cmds>"  appends "KEY #cmds" as its own line (needs --jira)
+#   --wrap   <n>      wrap body paragraphs at n columns (default 72, 0 disables)
+#   --no-wrap         leave body paragraphs exactly as given
 #   --amend           amend the previous commit instead of creating one
 #   --all             stage tracked modifications first (never touches untracked)
 #   --signoff         add Signed-off-by
@@ -28,6 +30,7 @@ set -uo pipefail
 DEFAULT_TYPES="feat fix docs style refactor perf test build ci chore revert"
 TYPES="${CC_TYPES:-$DEFAULT_TYPES}"
 MAX_HEADER="${CC_MAX_HEADER:-72}"
+WRAP="${CC_WRAP:-72}"
 
 TYPE=""; SCOPE=""; DESC=""; BREAKING=""; JIRA=""; SMART=""
 TRAILER_KEY="${CC_TRAILER_KEY:-Refs}"
@@ -47,6 +50,8 @@ while [ $# -gt 0 ]; do
     --trailer-key)   TRAILER_KEY="${2:-}"; shift ;;
     --footer)        FOOTERS+=("${2:-}"); shift ;;
     --smart-commit)  SMART="${2:-}"; shift ;;
+    --wrap)          WRAP="${2:-72}"; shift ;;
+    --no-wrap)       WRAP=0 ;;
     --amend)         AMEND=1 ;;
     --all|-a)        STAGE_ALL=1 ;;
     --signoff|-s)    SIGNOFF=1 ;;
@@ -92,6 +97,10 @@ printf '%s' "$TRAILER_KEY" | grep -qE '^[A-Za-z][A-Za-z0-9-]*$' || \
   die "trailer token '$TRAILER_KEY' must be one word using '-' instead of spaces"
 [ -n "$SMART" ] && [ -z "$JIRA" ] && die "--smart-commit needs --jira"
 
+printf '%s' "$WRAP" | grep -qE '^[0-9]+$' || \
+  die "--wrap takes a column count (0 disables wrapping)"
+[ "$WRAP" -ne 0 ] && [ "$WRAP" -lt 40 ] && die "--wrap $WRAP is too narrow to be readable"
+
 # ---------- header ----------
 BANG=""
 [ -n "$BREAKING" ] && BANG="!"
@@ -104,13 +113,50 @@ if [ "$HLEN" -gt "$MAX_HEADER" ]; then
   echo "warning: header is ${HLEN} chars (target <= ${MAX_HEADER}). Move detail into the body." >&2
 fi
 
+# ---------- body wrapping ----------
+# Git tooling assumes a wrapped body: `git log` indents the message by four spaces,
+# and an unwrapped paragraph forces horizontal scrolling in most viewers and diffs
+# badly when the message is later edited. Wrapping is greedy at word boundaries.
+# Passed through untouched: blank lines, fenced code blocks, indented lines, list
+# items, quotes, and any single word longer than the limit — URLs, paths and SHAs
+# are never broken. A second argument indents every line after the first, which is
+# what a multi-line footer value needs.
+wrap_paragraph() {
+  local width="$1" indent="${2:-}"
+  awk -v width="$width" -v indent="$indent" '
+    function emit(s) { if (started) print indent s; else { print s; started = 1 } }
+    function flush() { if (buf != "") { emit(buf); buf = "" } }
+    {
+      if ($0 ~ /^[ \t]*```/)                     { flush(); fence = !fence; emit($0); next }
+      if (fence)                                 { emit($0); next }
+      if ($0 ~ /^[ \t]*$/)                       { flush(); print ""; next }
+      if ($0 ~ /^([ \t]{2,}|\t)/)                { flush(); emit($0); next }
+      if ($0 ~ /^[ \t]*([-*+]|[0-9]+[.)])[ \t]/) { flush(); emit($0); next }
+      if ($0 ~ /^[ \t]*>/)                       { flush(); emit($0); next }
+      for (i = 1; i <= NF; i++) {
+        lim = width - (started ? length(indent) : 0)
+        if (buf == "")                           buf = $i
+        else if (length(buf) + 1 + length($i) <= lim) buf = buf " " $i
+        else                                     { emit(buf); buf = $i }
+      }
+    }
+    END { flush() }
+  '
+}
+
 # ---------- assemble ----------
 MSG="$(mktemp)"
 trap 'rm -f "$MSG" "$MSG.new"' EXIT
 
 printf '%s\n' "$HEADER" > "$MSG"
 for p in "${BODY_PARTS[@]:-}"; do
-  [ -n "$p" ] && printf '\n%s\n' "$p" >> "$MSG"
+  [ -n "$p" ] || continue
+  printf '\n' >> "$MSG"
+  if [ "$WRAP" -gt 0 ]; then
+    printf '%s\n' "$p" | wrap_paragraph "$WRAP" >> "$MSG"
+  else
+    printf '%s\n' "$p" >> "$MSG"
+  fi
 done
 
 # The footer block is written directly rather than through git-interpret-trailers.
@@ -119,11 +165,25 @@ done
 # uppercase token. BREAKING CHANGE leads the block, then any extra footers, then
 # the issue reference last so it is easy to spot at the bottom of the message.
 FOOTER_LINES=()
-[ -n "$BREAKING" ] && FOOTER_LINES+=("BREAKING CHANGE: ${BREAKING}")
+# BREAKING CHANGE is the one footer whose value may span lines, and the only one
+# worth wrapping: its spaced token already stops git parsing the block as trailers,
+# so continuation lines cost nothing that was not lost already. They are indented
+# so changelog parsers read them as part of the same note.
+if [ -n "$BREAKING" ]; then
+  if [ "$WRAP" -gt 0 ]; then
+    while IFS= read -r bcline; do FOOTER_LINES+=("$bcline"); done < <(
+      printf 'BREAKING CHANGE: %s\n' "$BREAKING" | wrap_paragraph "$WRAP" "  "
+    )
+  else
+    FOOTER_LINES+=("BREAKING CHANGE: ${BREAKING}")
+  fi
+fi
 for f in "${FOOTERS[@]:-}"; do
   if [ -n "$f" ]; then
     printf '%s' "$f" | grep -qE '^[A-Za-z][A-Za-z0-9-]*(: | #)' || \
       die "footer '$f' is not a valid trailer — use 'Token: value' or 'Token #value', with '-' instead of spaces in the token"
+    [ "$WRAP" -gt 0 ] && [ "${#f}" -gt "$WRAP" ] && \
+      echo "warning: footer is ${#f} chars and cannot be wrapped — a trailer must stay on one line" >&2
     FOOTER_LINES+=("$f")
   fi
 done

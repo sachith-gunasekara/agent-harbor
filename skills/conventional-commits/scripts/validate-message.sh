@@ -10,6 +10,7 @@
 #
 #   --require-jira    fail (not warn) when no Jira key is present
 #   --max-header N    header length limit (default 72)
+#   --max-body N      body line length limit (default 100)
 #
 # Exit 0 = clean, 1 = errors found.
 
@@ -17,6 +18,7 @@ set -uo pipefail
 
 TYPES="${CC_TYPES:-feat fix docs style refactor perf test build ci chore revert}"
 MAX_HEADER="${CC_MAX_HEADER:-72}"
+MAX_BODY="${CC_BODY_WRAP:-100}"
 REQUIRE_JIRA=0
 TARGET=""
 
@@ -24,7 +26,8 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --require-jira) REQUIRE_JIRA=1 ;;
     --max-header)   MAX_HEADER="${2:-72}"; shift ;;
-    -h|--help)      sed -n '2,18p' "$0"; exit 0 ;;
+    --max-body)     MAX_BODY="${2:-100}"; shift ;;
+    -h|--help)      sed -n '2,15p' "$0"; exit 0 ;;
     *)              TARGET="$1" ;;
   esac
   shift
@@ -80,7 +83,31 @@ check_message() {
     [ -z "$second" ] && ok "blank line after header" || err "body/footer must be separated from the header by a blank line"
   fi
 
-  # 3. Breaking change consistency.
+  # 3. Body line length.
+  # Skipped: fenced code, indented lines, footers, and any line of a single word,
+  # since a bare URL or path is longer than the limit and must not be broken.
+  if [ -n "$(printf '%s' "$rest" | tr -d '[:space:]')" ]; then
+    local nlong=0 longest=0 fence=0 line len
+    while IFS= read -r line; do
+      case "$line" in '```'*) fence=$((1-fence)); continue ;; esac
+      [ "$fence" -eq 1 ] && continue
+      case "$line" in '    '*|'	'*) continue ;; esac
+      printf '%s' "$line" | grep -qE '^(BREAKING[ -]CHANGE|[A-Za-z][A-Za-z0-9-]*)(: | #)' && continue
+      [ "$(printf '%s' "$line" | wc -w)" -le 1 ] && continue
+      len=${#line}
+      if [ "$len" -gt "$MAX_BODY" ]; then
+        nlong=$((nlong+1))
+        [ "$len" -gt "$longest" ] && longest="$len"
+      fi
+    done <<< "$rest"
+    if [ "$nlong" -eq 0 ]; then
+      ok "body line length"
+    else
+      warn "${nlong} body line(s) over ${MAX_BODY} columns (longest ${longest}) — wrap the body"
+    fi
+  fi
+
+  # 4. Breaking change consistency.
   local has_bang=0 has_bc=0
   printf '%s' "$header" | grep -qE '^[a-zA-Z]+(\([^)]+\))?!:' && has_bang=1
   printf '%s\n' "$msg" | grep -qE '^BREAKING[ -]CHANGE: .+' && has_bc=1
@@ -93,7 +120,7 @@ check_message() {
     ok "BREAKING CHANGE footer present"
   fi
 
-  # 4. Footer / trailer form.
+  # 5. Footer / trailer form.
   local footers
   footers="$(printf '%s\n' "$msg" | git interpret-trailers --parse --no-divider 2>/dev/null)"
   if [ -n "$footers" ]; then
@@ -109,7 +136,7 @@ check_message() {
     && ! printf '%s\n' "$msg" | grep -qE '^BREAKING[ -]CHANGE: ' \
     && warn "a footer token appears to contain a space — git will not treat it as a trailer; use '-' instead"
 
-  # 5. Jira key.
+  # 6. Jira key.
   local key
   key="$(printf '%s\n' "$msg" | grep -oE '\b[A-Z][A-Z0-9]+-[0-9]+\b' | head -n1)"
   if [ -n "$key" ]; then
