@@ -1,4 +1,4 @@
-# skills
+# agent-skills
 
 Agent skills I write and reuse across coding agents. Each one is a self-contained
 directory under [`skills/`](skills/) with a `SKILL.md` entry point, so it can be
@@ -10,23 +10,23 @@ copied by hand.
 Install everything in this repo:
 
 ```bash
-npx skills add sachith-gunasekara/skills --all
+npx skills add sachith-gunasekara/agent-skills --all
 ```
 
 Pick interactively, or target one skill:
 
 ```bash
-npx skills add sachith-gunasekara/skills            # prompts for which skills and which agents
-npx skills add sachith-gunasekara/skills -l         # list what's available, install nothing
-npx skills add sachith-gunasekara/skills -s conventional-commits
-npx skills add sachith-gunasekara/skills -g         # install globally instead of into the project
-npx skills add sachith-gunasekara/skills -a claude-code
+npx skills add sachith-gunasekara/agent-skills            # prompts for which skills and which agents
+npx skills add sachith-gunasekara/agent-skills -l         # list what's available, install nothing
+npx skills add sachith-gunasekara/agent-skills -s conventional-commits
+npx skills add sachith-gunasekara/agent-skills -g         # install globally instead of into the project
+npx skills add sachith-gunasekara/agent-skills -a claude-code
 ```
 
 A single skill by URL works too:
 
 ```bash
-npx skills add https://github.com/sachith-gunasekara/skills/tree/main/skills/conventional-commits
+npx skills add https://github.com/sachith-gunasekara/agent-skills/tree/main/skills/conventional-commits
 ```
 
 ### As a Claude Code plugin
@@ -34,7 +34,7 @@ npx skills add https://github.com/sachith-gunasekara/skills/tree/main/skills/con
 The repo also carries a `.claude-plugin/marketplace.json`, so inside Claude Code:
 
 ```
-/plugin marketplace add sachith-gunasekara/skills
+/plugin marketplace add sachith-gunasekara/agent-skills
 /plugin install sachith-skills@sachith-skills
 ```
 
@@ -44,8 +44,8 @@ Copy the skill directory into wherever your agent looks for skills — for Claud
 that's `~/.claude/skills/` (global) or `.claude/skills/` (per project):
 
 ```bash
-git clone https://github.com/sachith-gunasekara/skills.git
-cp -R skills/skills/conventional-commits ~/.claude/skills/
+git clone https://github.com/sachith-gunasekara/agent-skills.git
+cp -R agent-skills/skills/conventional-commits ~/.claude/skills/
 ```
 
 ## Skills
