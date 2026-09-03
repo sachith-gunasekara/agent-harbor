@@ -230,8 +230,36 @@ reference is the usual cause — and it fails in under a second with no usable l
 
 ### One-time setup: `MIRROR_PAT`
 
-Pull requests created with the default `GITHUB_TOKEN` do not trigger other
-workflows, so `validate.yml` will not run on mirror PRs. Add a personal access
-token with `repo` scope as a repository secret named `MIRROR_PAT` to fix that. The
-workflow falls back to `GITHUB_TOKEN` and logs a warning when the secret is absent,
-so mirroring still works — the PRs just arrive unvalidated.
+Without this, the sync pushes its branch and then fails to open the pull request:
+
+```
+GitHub Actions is not permitted to create or approve pull requests.
+```
+
+Create a fine-grained personal access token scoped to this repository, with
+**Contents: read and write** and **Pull requests: read and write**, then:
+
+```bash
+gh secret set MIRROR_PAT --repo <owner>/agent-skills
+```
+
+The alternative is to enable Settings → Actions → General → *Allow GitHub Actions
+to create and approve pull requests*. That unblocks PR creation, but pull requests
+opened with the default `GITHUB_TOKEN` do not trigger other workflows, so
+`validate.yml` never runs on them and mirror PRs arrive unchecked. The token is the
+better fix for that reason.
+
+If the pull request cannot be opened, nothing is lost — the branch
+`mirror/<skill>` has already been pushed, and you can raise it by hand:
+
+```bash
+gh pr create --base main --head mirror/<skill>
+```
+
+The workflow also expects two labels to exist, `mirror` and `automated`. Create
+them once:
+
+```bash
+gh label create mirror --color 0E8A16 --description "Vendored copy of an upstream skill"
+gh label create automated --color 5319E7 --description "Opened by a workflow, not a human"
+```

@@ -106,6 +106,17 @@ jobs:
       matrix:
         skill: ${{ fromJSON(needs.detect.outputs.changed) }}
     steps:
+      - name: Check how pull requests will be authenticated
+        # Runs before anything else so the warning is visible in the run that needs
+        # it. A warning placed after the create-pull-request step is skipped when
+        # that step fails, which is precisely when it would have been useful.
+        env:
+          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}
+        run: |
+          if [ -z "$MIRROR_PAT" ]; then
+            echo "::warning::MIRROR_PAT is not set. Falling back to GITHUB_TOKEN, which needs 'Allow GitHub Actions to create and approve pull requests' enabled in Settings > Actions > General, and will not trigger validate.yml on the pull request it opens."
+          fi
+
       - uses: actions/checkout@v5
 
       - name: Install yq
@@ -229,12 +240,30 @@ jobs:
             docs/skill-library.md
             .claude-plugin
 
-      - name: Warn if no PAT is configured
-        # The `secrets` context is not available in a step-level `if`, so read the
-        # secret through `env` and branch inside the script instead.
-        env:
-          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}
+      - name: Explain a pull request failure
+        # Only fires when the step above failed. Steps skip on failure by default,
+        # which is why the PAT warning used to be invisible in exactly the run that
+        # needed it — it sat after the step that failed.
+        if: failure()
         run: |
-          if [ -z "$MIRROR_PAT" ]; then
-            echo "::warning::MIRROR_PAT is not set, so this PR was opened with GITHUB_TOKEN and validate.yml will not run on it. Add a PAT with 'repo' scope as the MIRROR_PAT secret."
-          fi
+          {
+            echo "### Could not open the pull request"
+            echo ""
+            echo "The branch \`mirror/${{ matrix.skill }}\` was pushed successfully, so no"
+            echo "work is lost — only the pull request could not be created."
+            echo ""
+            echo "If the error above is *GitHub Actions is not permitted to create or"
+            echo "approve pull requests*, fix it in one of two ways:"
+            echo ""
+            echo "1. Set the \`MIRROR_PAT\` secret (preferred — it also lets \`validate.yml\`"
+            echo "   run on the resulting pull request)."
+            echo "2. Or enable Settings → Actions → General → *Allow GitHub Actions to"
+            echo "   create and approve pull requests*."
+            echo ""
+            echo "Meanwhile you can open it by hand:"
+            echo ""
+            echo '```'
+            echo "gh pr create --base main --head mirror/${{ matrix.skill }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Could not open the pull request for ${{ matrix.skill }}. The branch was pushed; see the job summary for the two ways to fix this."
