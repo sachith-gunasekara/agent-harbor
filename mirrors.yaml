@@ -48,3 +48,9 @@ mirrors:
     ref: main
     license: MIT
     notes: Finds and installs agent skills, which is squarely this repo's business.
+
+  - repo: obra/superpowers
+    skill: verification-before-completion
+    ref: main
+    license: MIT
+    notes: Checks the work actually runs before calling it done, instead of assuming.
