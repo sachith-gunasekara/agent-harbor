@@ -1,0 +1,221 @@
+name: mirror-sync
+
+# Keeps skills/mirrored/ in step with the upstreams declared in mirrors.yaml.
+#
+# Runs when mirrors.yaml changes, weekly to catch upstream drift, and on demand.
+# Opens one pull request per skill that actually changed; skills whose upstream
+# content still hashes identically produce no PR at all.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - mirrors.yaml
+      - scripts/sync-mirrors.sh
+      - .github/workflows/mirror-sync.yml
+  schedule:
+    - cron: "17 6 * * 1" # Mondays, 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: Only sync this mirror (blank = all)
+        required: false
+        type: string
+      force:
+        description: Re-materialise even if already up to date
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: mirror-sync
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.plan.outputs.changed }}
+      any: ${{ steps.plan.outputs.any }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install yq
+        run: |
+          sudo curl -fsSL -o /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.47.1/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Work out what changed
+        id: plan
+        run: |
+          # Note: steps run under `bash -e`, so build the argument list with
+          # if/fi rather than `[ ... ] && ...`, which would fail the step whenever
+          # the condition is false.
+          args=(--dry-run --json)
+          if [ -n "${{ inputs.skill }}" ]; then args+=(--skill "${{ inputs.skill }}"); fi
+          if [ "${{ inputs.force }}" = "true" ]; then args+=(--force); fi
+
+          # Report failures but still act on the mirrors that did resolve.
+          if ! ./scripts/sync-mirrors.sh "${args[@]}" > plan.json; then
+            echo "::warning::one or more mirrors failed to resolve; see the log"
+          fi
+          cat plan.json
+
+          changed="$(jq -c '[.[] | select(.state != "unchanged") | .name]' plan.json)"
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          if [ "$(jq 'length' <<<"$changed")" -gt 0 ]; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          {
+            echo "### Mirror sync plan"
+            echo ""
+            echo "| Skill | State | Upstream |"
+            echo "|---|---|---|"
+            jq -r '.[] | "| \(.name) | \(.state) | \(.repo)/\(.path) |"' plan.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  pull-request:
+    needs: detect
+    if: needs.detect.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      # Serial on purpose: every mirror PR touches mirrors.lock.json and the
+      # generated README, so parallel branches would race on the same lines.
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        skill: ${{ fromJSON(needs.detect.outputs.changed) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install yq
+        run: |
+          sudo curl -fsSL -o /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.47.1/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Sync ${{ matrix.skill }}
+        id: sync
+        run: |
+          before="$(jq -r --arg n '${{ matrix.skill }}' '.mirrors[$n].commit // ""' mirrors.lock.json 2>/dev/null || true)"
+          echo "before=$before" >> "$GITHUB_OUTPUT"
+
+          args=(--skill '${{ matrix.skill }}')
+          if [ "${{ inputs.force }}" = "true" ]; then args+=(--force); fi
+          ./scripts/sync-mirrors.sh "${args[@]}"
+          ./scripts/gen-catalog.sh
+
+          after="$(jq -r --arg n '${{ matrix.skill }}' '.mirrors[$n].commit // ""' mirrors.lock.json 2>/dev/null || true)"
+          repo="$(jq -r --arg n '${{ matrix.skill }}' '.mirrors[$n].repo // ""' mirrors.lock.json 2>/dev/null || true)"
+          path="$(jq -r --arg n '${{ matrix.skill }}' '.mirrors[$n].path // ""' mirrors.lock.json 2>/dev/null || true)"
+          echo "after=$after" >> "$GITHUB_OUTPUT"
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$after" ]; then
+            echo "action=removed" >> "$GITHUB_OUTPUT"
+          elif [ -z "$before" ]; then
+            echo "action=added" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=updated" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate the result
+        run: |
+          ./scripts/validate-skills.sh
+          ./scripts/sync-mirrors.sh --verify
+
+      - name: Summarise upstream changes
+        id: changes
+        run: |
+          repo='${{ steps.sync.outputs.repo }}'
+          before='${{ steps.sync.outputs.before }}'
+          after='${{ steps.sync.outputs.after }}'
+          path='${{ steps.sync.outputs.path }}'
+          {
+            if [ -n "$repo" ] && [ -n "$before" ] && [ -n "$after" ] && [ "$before" != "$after" ]; then
+              echo "Upstream commits touching \`$path\`:"
+              echo ""
+              echo '```'
+              git clone --filter=blob:none --no-checkout -q "https://github.com/$repo.git" up 2>/dev/null || true
+              git -C up log --oneline "$before..$after" -- "$path" 2>/dev/null | head -40 || echo "(could not read upstream log)"
+              echo '```'
+              echo ""
+              echo "Compare: https://github.com/$repo/compare/$before...$after"
+              rm -rf up
+            fi
+          } > body-extra.md
+          cat body-extra.md
+
+      - name: Compose PR body
+        id: body
+        run: |
+          {
+            echo "Automated mirror sync for \`${{ matrix.skill }}\` (${{ steps.sync.outputs.action }})."
+            echo ""
+            if [ "${{ steps.sync.outputs.action }}" = "removed" ]; then
+              echo "This skill was dropped from \`mirrors.yaml\`, so its vendored copy and"
+              echo "lockfile entry are being deleted."
+            else
+              echo "| | |"
+              echo "|---|---|"
+              echo "| Upstream | \`${{ steps.sync.outputs.repo }}/${{ steps.sync.outputs.path }}\` |"
+              echo "| From | \`${{ steps.sync.outputs.before }}\` |"
+              echo "| To | \`${{ steps.sync.outputs.after }}\` |"
+              echo ""
+              cat body-extra.md
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "The vendored directory is a byte-for-byte copy of upstream — review the"
+            echo "diff for anything you would not want running in your agent, especially"
+            echo "changes to \`scripts/\`. Do not hand-edit files under \`skills/mirrored/\`;"
+            echo "CI enforces that they match the lockfile."
+            echo ""
+            echo "Generated by \`.github/workflows/mirror-sync.yml\`."
+          } > pr-body.md
+          rm -f body-extra.md
+          {
+            echo "text<<PRBODY"
+            cat pr-body.md
+            echo "PRBODY"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          # A PAT is needed for validate.yml to run on the PR — pull requests
+          # created with the default GITHUB_TOKEN do not trigger other workflows.
+          token: ${{ secrets.MIRROR_PAT || secrets.GITHUB_TOKEN }}
+          branch: mirror/${{ matrix.skill }}
+          delete-branch: true
+          commit-message: |
+            chore(mirror): ${{ steps.sync.outputs.action }} ${{ matrix.skill }}
+
+            Syncs skills/mirrored/${{ matrix.skill }} with
+            ${{ steps.sync.outputs.repo }}/${{ steps.sync.outputs.path }}.
+          title: "chore(mirror): ${{ steps.sync.outputs.action }} `${{ matrix.skill }}`"
+          body: ${{ steps.body.outputs.text }}
+          labels: |
+            mirror
+            automated
+          add-paths: |
+            skills/mirrored
+            mirrors.lock.json
+            README.md
+            docs/skill-library.md
+            .claude-plugin
+
+      - name: Warn if no PAT is configured
+        if: ${{ secrets.MIRROR_PAT == '' }}
+        run: |
+          echo "::warning::MIRROR_PAT is not set, so this PR was opened with GITHUB_TOKEN and validate.yml will not run on it. Add a PAT with 'repo' scope as the MIRROR_PAT secret."
