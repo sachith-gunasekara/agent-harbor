@@ -202,16 +202,31 @@ resolution.
 Workflows: [`mirror-sync.yml`](../.github/workflows/mirror-sync.yml) opens the PRs;
 [`validate.yml`](../.github/workflows/validate.yml) gates them.
 
-If you change a workflow, lint it before pushing:
+### Linting
+
+Install the hooks once and none of this is your problem again:
 
 ```bash
-brew install actionlint && actionlint
+brew install yq pre-commit && pre-commit install
 ```
 
-Plain YAML validity is not enough. A workflow can parse fine and still be rejected
-by GitHub at startup — an invalid context reference is the usual cause, and it
-fails in under a second with no usable log. `validate.yml` runs `actionlint` for
-this reason.
+Every check CI runs then runs before the commit lands, from the same
+[`.pre-commit-config.yaml`](../.pre-commit-config.yaml). The catalog, `NOTICE.md`
+and plugin manifests are regenerated for you rather than checked — if a commit
+would leave them stale, the hook rewrites them and stops once so you can re-add.
+
+Two things about that config are load-bearing:
+
+- **`exclude: ^skills/mirrored/`.** The whitespace fixers must never touch a
+  vendored skill. A trimmed trailing newline changes the directory's hash, which
+  the sync reads as upstream drift, and `--verify` starts failing for no reason.
+- **`gen-catalog.sh` normalises its output to a single trailing newline.** Without
+  that it fights `end-of-file-fixer` forever: the hook trims the blank line, the
+  generator writes it back, and every commit fails in a loop.
+
+`actionlint` is in there because plain YAML validity is not enough. A workflow can
+parse fine and still be rejected by GitHub at startup — an invalid context
+reference is the usual cause — and it fails in under a second with no usable log.
 
 ### One-time setup: `MIRROR_PAT`
 

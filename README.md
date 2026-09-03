@@ -103,15 +103,30 @@ works.
 
 ## Repo tooling
 
+Set up once, and the rest is automatic:
+
+```bash
+brew install yq pre-commit && pre-commit install
+```
+
+That wires the same checks CI runs into your commits — shellcheck, actionlint, skill
+validation, the mirror drift guard, and regeneration of the README table, catalog,
+`NOTICE.md` and plugin manifests. You never update those by hand; if a commit would
+leave them stale, the hook rewrites them and asks you to re-add.
+
+The scripts are still there to run directly:
+
 ```bash
 ./scripts/sync-mirrors.sh --dry-run   # what would change against upstream
 ./scripts/sync-mirrors.sh --verify    # mirrored skills still match the lockfile
 ./scripts/validate-skills.sh          # frontmatter, naming, scripts, referenced paths
 ./scripts/gen-catalog.sh              # regenerate README table, catalog, NOTICE, manifests
+./scripts/gen-catalog.sh --check      # ...or just report staleness
 ```
 
-`sync-mirrors.sh` needs [`yq`](https://github.com/mikefarah/yq) (`brew install yq`);
-`gen-catalog.sh` needs `jq`. CI runs all four on every pull request.
+`sync-mirrors.sh` needs [`yq`](https://github.com/mikefarah/yq); `gen-catalog.sh` needs
+`jq`. CI runs the same [`.pre-commit-config.yaml`](.pre-commit-config.yaml) on every
+pull request, so the hooks and the pipeline cannot drift apart.
 
 ## License
 

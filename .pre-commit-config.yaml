@@ -1,0 +1,75 @@
+# Local linting, so the checks that gate a pull request run before the commit
+# rather than after the push. Set it up once:
+#
+#   brew install pre-commit && pre-commit install
+#
+# CI runs `pre-commit run --all-files` from this same file, so the hooks and the
+# pipeline cannot drift apart.
+#
+# Nothing here may modify skills/mirrored/. Those directories are byte-for-byte
+# copies of upstream, and the sync detects change by hashing them — a stray
+# whitespace fix would look like upstream drift and fail `sync-mirrors.sh
+# --verify`. Hence the global exclude; hooks that must still see the whole repo
+# set `pass_filenames: false` and run regardless.
+exclude: ^skills/mirrored/
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+      - id: check-shebang-scripts-are-executable
+      - id: check-executables-have-shebangs
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        args: [-S, warning]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+
+  # All three reason about the repository as a whole rather than about the files in
+  # one commit, so they set always_run. A `files:` filter would interact badly with
+  # the global exclude above: a commit that only touches skills/mirrored/ — which is
+  # exactly what a mirror sync produces — would leave the file list empty and skip
+  # the hook, so the catalog would silently go stale. They are all offline and fast.
+  - repo: local
+    hooks:
+      - id: validate-skills
+        name: validate skills
+        description: Frontmatter, name/directory agreement, cross-repo name uniqueness.
+        entry: ./scripts/validate-skills.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+
+      - id: gen-catalog
+        name: regenerate skill catalog
+        description: >-
+          Rewrites the README table, catalog, NOTICE and plugin manifests from the
+          skills themselves. Modifies files, so the commit stops once and you
+          re-add — the point is that the maintainer never updates these by hand.
+        entry: ./scripts/gen-catalog.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+
+      - id: verify-mirrors
+        name: mirrored skills match the lockfile
+        description: >-
+          Catches a hand-edit to a vendored skill before it is committed, rather
+          than at review time. Offline — hashes local directories only.
+        entry: ./scripts/sync-mirrors.sh
+        args: [--verify]
+        language: script
+        pass_filenames: false
+        always_run: true
