@@ -182,6 +182,17 @@ resolution.
 Workflows: [`mirror-sync.yml`](../.github/workflows/mirror-sync.yml) opens the PRs;
 [`validate.yml`](../.github/workflows/validate.yml) gates them.
 
+If you change a workflow, lint it before pushing:
+
+```bash
+brew install actionlint && actionlint
+```
+
+Plain YAML validity is not enough. A workflow can parse fine and still be rejected
+by GitHub at startup — an invalid context reference is the usual cause, and it
+fails in under a second with no usable log. `validate.yml` runs `actionlint` for
+this reason.
+
 ### One-time setup: `MIRROR_PAT`
 
 Pull requests created with the default `GITHUB_TOKEN` do not trigger other
