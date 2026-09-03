@@ -33,6 +33,17 @@ Why it is here: Structured idea generation before committing to an approach.
 - License: MIT
 - Vendored at: [`skills/mirrored/brainstorming`](../skills/mirrored/brainstorming)
 
+### `find-skills`
+
+Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.
+
+Why it is here: Finds and installs agent skills, which is squarely this repo's business.
+
+- Upstream: [vercel-labs/skills/skills/find-skills](https://github.com/vercel-labs/skills/tree/435076e78988e1e6ec40d00b0b1d76bdbbc5419a/skills/find-skills)
+- Pinned commit: `435076e78988e1e6ec40d00b0b1d76bdbbc5419a`
+- License: MIT
+- Vendored at: [`skills/mirrored/find-skills`](../skills/mirrored/find-skills)
+
 ### `systematic-debugging`
 
 Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes

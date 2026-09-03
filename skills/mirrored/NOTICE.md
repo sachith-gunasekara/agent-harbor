@@ -15,6 +15,12 @@ each mirrored directory stays byte-identical to its upstream.
 - License: MIT (see the LICENSE file in https://github.com/obra/superpowers)
 - Commit: b36e0829c6d0140e93cfef2ca599b1b07d4a7797
 
+## find-skills
+
+- Source: https://github.com/vercel-labs/skills/tree/435076e78988e1e6ec40d00b0b1d76bdbbc5419a/skills/find-skills
+- License: MIT (see the LICENSE file in https://github.com/vercel-labs/skills)
+- Commit: 435076e78988e1e6ec40d00b0b1d76bdbbc5419a
+
 ## systematic-debugging
 
 - Source: https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/systematic-debugging
