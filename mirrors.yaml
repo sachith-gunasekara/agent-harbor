@@ -42,3 +42,9 @@ mirrors:
     ref: main
     license: MIT
     notes: Root-cause debugging loop that resists guess-and-check fixes.
+
+  - repo: vercel-labs/skills
+    skill: find-skills
+    ref: main
+    license: MIT
+    notes: Finds and installs agent skills, which is squarely this repo's business.
