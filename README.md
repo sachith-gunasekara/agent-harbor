@@ -40,7 +40,7 @@ The repo also carries a `.claude-plugin/marketplace.json`, so inside Claude Code
 
 ```
 /plugin marketplace add sachith-gunasekara/agent-harbor
-/plugin install sachith-skills@sachith-skills
+/plugin install agent-harbor@agent-harbor
 ```
 
 ### By hand

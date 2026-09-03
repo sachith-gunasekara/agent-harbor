@@ -1,5 +1,5 @@
 {
-  "name": "sachith-skills",
+  "name": "agent-harbor",
   "owner": {
     "name": "Sachith Gunasekara",
     "email": "sachithgunasekara7@gmail.com",
@@ -11,7 +11,7 @@
   },
   "plugins": [
     {
-      "name": "sachith-skills",
+      "name": "agent-harbor",
       "source": "./",
       "description": "Agent skills by Sachith Gunasekara — 1 written here, 3 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging.",
       "version": "0.1.0",
@@ -22,9 +22,10 @@
       "license": "MIT",
       "keywords": [
         "skills",
-        "git",
-        "conventional-commits",
-        "jira"
+        "agent-skills",
+        "claude-code",
+        "skill-mirror",
+        "conventional-commits"
       ]
     }
   ]

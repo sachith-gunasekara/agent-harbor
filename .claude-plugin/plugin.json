@@ -1,5 +1,5 @@
 {
-  "name": "sachith-skills",
+  "name": "agent-harbor",
   "version": "0.1.0",
   "description": "Agent skills by Sachith Gunasekara — 1 written here, 3 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging.",
   "author": {
@@ -9,8 +9,9 @@
   "license": "MIT",
   "keywords": [
     "skills",
-    "git",
-    "conventional-commits",
-    "jira"
+    "agent-skills",
+    "claude-code",
+    "skill-mirror",
+    "conventional-commits"
   ]
 }
