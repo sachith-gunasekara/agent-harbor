@@ -43,4 +43,3 @@ Why it is here: Root-cause debugging loop that resists guess-and-check fixes.
 - Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
 - License: MIT
 - Vendored at: [`skills/mirrored/systematic-debugging`](../skills/mirrored/systematic-debugging)
-

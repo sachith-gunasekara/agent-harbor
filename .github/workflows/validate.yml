@@ -1,5 +1,9 @@
 name: validate
 
+# Gates every pull request. The linting half is delegated to .pre-commit-config.yaml
+# so that CI and the local hooks run the identical set of checks and cannot drift
+# apart — if it passes before you commit, it passes here.
+
 on:
   push:
     branches: [main]
@@ -15,46 +19,35 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
       - name: Install yq
+        # Needed by the repo's own hooks: sync-mirrors.sh reads mirrors.yaml with it,
+        # and validate-skills.sh / gen-catalog.sh prefer it for frontmatter.
         run: |
           sudo curl -fsSL -o /usr/local/bin/yq \
             https://github.com/mikefarah/yq/releases/download/v4.47.1/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
           yq --version
 
-      - name: Lint workflows
-        # Catches what plain YAML parsing cannot: invalid context references,
-        # bad expressions, and shell problems inside `run:` blocks. A workflow
-        # with those faults is accepted by GitHub and then fails at startup with
-        # no usable log, so it has to be caught here.
+      - name: Cache pre-commit environments
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Lint and validate
+        # Covers shellcheck, actionlint, the fixer hooks, validate-skills.sh,
+        # gen-catalog.sh and sync-mirrors.sh --verify. --show-diff-on-failure
+        # prints exactly what a hook would have rewritten, so a stale generated
+        # file reads as a diff rather than as an opaque failure.
         run: |
-          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
-            | sudo tar xz -C /usr/local/bin actionlint
-          actionlint -color
-
-      - name: Shell syntax
-        run: |
-          fail=0
-          while IFS= read -r f; do
-            bash -n "$f" || { echo "syntax error: $f"; fail=1; }
-          done < <(find scripts skills -name '*.sh' -type f)
-          exit $fail
-
-      - name: Lint shell scripts
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
-          # Repo tooling is held to shellcheck; mirrored skills are upstream's code
-          # and are deliberately not linted here.
-          shellcheck -S warning scripts/*.sh skills/own/*/scripts/*.sh
-
-      - name: Validate skills
-        run: ./scripts/validate-skills.sh
-
-      - name: Generated files are current
-        run: ./scripts/gen-catalog.sh --check
-
-      - name: Mirrored skills match the lockfile
-        run: ./scripts/sync-mirrors.sh --verify
+          python -m pip install --quiet pre-commit
+          pre-commit run --all-files --show-diff-on-failure --color always
 
       - name: Skills are discoverable
+        # Not a lint: proves the skills/own/ + skills/mirrored/ catalog layout is
+        # still something an installer can resolve.
         run: npx --yes skills add . -l

@@ -249,6 +249,10 @@ splice() {
 STALE=0
 report() {
   local path="$1" tmp="$2"
+  # Collapse trailing newlines to exactly one. Without this the output fights the
+  # end-of-file-fixer pre-commit hook: the hook trims the blank line, this script
+  # writes it back, and every commit fails in a loop.
+  perl -0777 -pi -e 's/\n*\z/\n/' "$tmp" 2>/dev/null || true
   if [ -f "$path" ] && cmp -s "$path" "$tmp"; then
     rm -f "$tmp"; return 0
   fi

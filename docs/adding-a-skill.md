@@ -74,11 +74,22 @@ stale. The plugin manifests otherwise pick up everything under `skills/` automat
 
 ## 6. Check it
 
+If you have run `pre-commit install`, steps 5 and 6 happen on their own — the hooks
+regenerate the catalog and run every check below when you commit.
+
+To run them by hand:
+
+```bash
+pre-commit run --all-files        # everything CI runs
+npx skills add . -l               # installs cleanly and shows up in discovery
+```
+
+Or individually:
+
 ```bash
 ./scripts/validate-skills.sh      # frontmatter, name/dir agreement, uniqueness,
                                   # referenced paths, script syntax + exec bit
 ./scripts/gen-catalog.sh --check  # generated regions are current
-npx skills add . -l               # installs cleanly and shows up in discovery
 ```
 
 `validate-skills.sh` is the automated form of the checks this section used to spell
