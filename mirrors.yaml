@@ -1,19 +1,25 @@
 # Skills mirrored from other repositories into skills/mirrored/.
 #
-# Edit this file to add, pin, or remove a mirror, then let CI do the rest:
-# `.github/workflows/mirror-sync.yml` clones each upstream, compares content, and
-# opens one pull request per skill that actually changed. Nothing else here is
-# hand-maintained — mirrors.lock.json and skills/mirrored/ are both generated.
+# Edit this file to add, pin, or remove a mirror, then open a PR. Once it is
+# merged to main, `.github/workflows/mirror-sync.yml` clones each upstream,
+# compares content, and opens one pull request per skill that actually changed.
+# Nothing else here is hand-maintained — mirrors.lock.json and skills/mirrored/
+# are both generated.
 #
 # Fields:
 #   repo      required  owner/name on GitHub
-#   path      required  directory inside that repo containing SKILL.md
-#   name      optional  local directory name; defaults to the basename of `path`
-#   ref       optional  branch, tag, or full 40-char SHA. Defaults to `defaults.ref`.
-#                       Use a SHA to freeze a skill at a known-good version.
+#   skill     required  the skill's name, which is also its directory name
+#                       upstream. Resolved the way an installer resolves it, so
+#                       you do not need to know where in the repo it lives.
+#   ref       optional  branch, tag, or full 40-char SHA. Defaults to
+#                       `defaults.ref`. Use a SHA to freeze a skill.
 #   license   required  SPDX id of the upstream license. You are redistributing
 #                       this code — the sync refuses to run without it, and warns
 #                       if it cannot find a matching LICENSE file upstream.
+#   name      optional  vendor under a different local directory name, for when
+#                       the upstream name collides with something already here
+#   path      optional  explicit upstream directory. Only needed to break a tie
+#                       when a repo has several directories with the same name.
 #   homepage  optional  link for the catalog; defaults to the repo URL
 #   notes     optional  one line explaining why this skill is mirrored
 #
@@ -26,13 +32,13 @@ defaults:
 
 mirrors:
   - repo: obra/superpowers
-    path: skills/brainstorming
+    skill: brainstorming
     ref: main
     license: MIT
     notes: Structured idea generation before committing to an approach.
 
   - repo: obra/superpowers
-    path: skills/systematic-debugging
+    skill: systematic-debugging
     ref: main
     license: MIT
     notes: Root-cause debugging loop that resists guess-and-check fixes.

@@ -13,6 +13,11 @@
 # Because of that, a mirrored directory must stay byte-identical to upstream.
 # Nothing is injected into it — provenance lives in mirrors.lock.json instead.
 #
+# Entries name a repo and a skill, not a path. The skill is located the way an
+# installer locates it: the directory called <skill> that contains a SKILL.md.
+# An explicit 'path:' is only needed to break a tie in a repo that has more than
+# one directory by that name.
+#
 # Usage:
 #   sync-mirrors.sh                  sync every entry in mirrors.yaml
 #   sync-mirrors.sh --dry-run        report what would change, write nothing
@@ -93,12 +98,29 @@ resolve_commit() {
   printf '%s' "$out"
 }
 
-# Shallow, blobless, sparse clone of just the one directory we care about.
-fetch_upstream() {
-  local repo="$1" commit="$2" path="$3" dest="$4"
+# Shallow, blobless fetch with no checkout. Trees come down but blobs do not, so
+# the repository layout can be inspected before deciding what to materialise.
+fetch_repo() {
+  local repo="$1" commit="$2" dest="$3"
   git init -q "$dest" >/dev/null 2>&1 || return 1
   git -C "$dest" remote add origin "https://github.com/${repo}.git" >/dev/null 2>&1 || return 1
   git -C "$dest" fetch -q --depth 1 --filter=blob:none origin "$commit" >/dev/null 2>&1 || return 1
+  return 0
+}
+
+# Locate a skill by name, the way an installer does: find the directory called
+# <skill> that contains a SKILL.md. Prints every match, one per line, so the
+# caller can distinguish "not found" from "ambiguous".
+find_skill_paths() {
+  local dest="$1" commit="$2" skill="$3"
+  git -C "$dest" ls-tree -r --name-only "$commit" 2>/dev/null \
+    | grep -E "(^|/)${skill}/SKILL\.md$" \
+    | sed 's|/SKILL\.md$||'
+}
+
+# Materialise one directory out of an already-fetched repo.
+checkout_path() {
+  local dest="$1" commit="$2" path="$3"
   git -C "$dest" sparse-checkout init --cone >/dev/null 2>&1
   git -C "$dest" sparse-checkout set "$path" >/dev/null 2>&1
   git -C "$dest" checkout -q "$commit" >/dev/null 2>&1 || return 1
@@ -212,18 +234,23 @@ while [ "$i" -lt "$COUNT" ]; do
   idx=$i; i=$((i + 1))
 
   repo="$(yq -r ".mirrors[$idx].repo // \"\"" "$CONFIG")"
+  skill="$(yq -r ".mirrors[$idx].skill // \"\"" "$CONFIG")"
   path="$(yq -r ".mirrors[$idx].path // \"\"" "$CONFIG")"
   name="$(yq -r ".mirrors[$idx].name // \"\"" "$CONFIG")"
   ref="$(yq -r ".mirrors[$idx].ref // \"\"" "$CONFIG")"
   license="$(yq -r ".mirrors[$idx].license // \"\"" "$CONFIG")"
 
   path="${path%/}"
-  [ -n "$name" ] || name="$(basename "$path")"
+  [ -n "$name" ] || name="$skill"
   [ -n "$ref" ] || ref="$DEFAULT_REF"
 
   # ---- preflight ---------------------------------------------------------
-  if [ -z "$repo" ] || [ -z "$path" ]; then
-    warn "ERROR    mirrors[$idx]: 'repo' and 'path' are required"; STATUS=1; continue
+  if [ -z "$repo" ] || [ -z "$skill" ]; then
+    warn "ERROR    mirrors[$idx]: 'repo' and 'skill' are required"; STATUS=1; continue
+  fi
+  if ! printf '%s' "$skill" | grep -qE '^[a-z0-9][a-z0-9-]*$'; then
+    warn "ERROR    $skill: skill name must be lowercase letters, digits and hyphens"
+    STATUS=1; continue
   fi
   if ! printf '%s' "$repo" | grep -qE '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$'; then
     warn "ERROR    $repo: not a valid owner/name"; STATUS=1; continue
@@ -261,13 +288,39 @@ while [ "$i" -lt "$COUNT" ]; do
   local_tree="$(dir_tree_oid "$dest" 2>/dev/null || true)"
 
   work="$TMP_ROOT/$name"
-  if ! fetch_upstream "$repo" "$commit" "$path" "$work"; then
-    warn "ERROR    $name: failed to fetch $repo@${commit:0:7} ($path)"; STATUS=1; continue
+  if ! fetch_repo "$repo" "$commit" "$work"; then
+    warn "ERROR    $name: failed to fetch $repo@${commit:0:7}"; STATUS=1; continue
+  fi
+
+  # Find the skill by name, the way an installer does. An explicit 'path:' is
+  # only needed to break a tie when a repo has several directories by that name.
+  if [ -z "$path" ]; then
+    matches="$(find_skill_paths "$work" "$commit" "$skill")"
+    count="$(printf '%s' "$matches" | grep -c . || true)"
+    if [ "$count" -eq 0 ]; then
+      warn "ERROR    $skill: no directory named '$skill' with a SKILL.md in $repo@${commit:0:7}"
+      warn "         available skills:"
+      git -C "$work" ls-tree -r --name-only "$commit" 2>/dev/null \
+        | grep -E '(^|/)SKILL\.md$' | sed 's|/SKILL\.md$||' | sed 's|.*/||' \
+        | sort -u | head -30 | sed 's/^/           /' >&2
+      STATUS=1; continue
+    fi
+    if [ "$count" -gt 1 ]; then
+      warn "ERROR    $skill: ambiguous — $repo@${commit:0:7} has $count directories named '$skill':"
+      printf '%s\n' "$matches" | sed 's/^/           /' >&2
+      warn "         disambiguate with an explicit 'path:' on this entry"
+      STATUS=1; continue
+    fi
+    path="$matches"
   fi
 
   upstream_tree="$(git -C "$work" rev-parse "$commit:$path" 2>/dev/null)"
   if [ -z "$upstream_tree" ]; then
     warn "ERROR    $name: '$path' does not exist in $repo@${commit:0:7}"; STATUS=1; continue
+  fi
+
+  if ! checkout_path "$work" "$commit" "$path"; then
+    warn "ERROR    $name: failed to check out '$path' from $repo@${commit:0:7}"; STATUS=1; continue
   fi
   if [ ! -f "$work/$path/SKILL.md" ]; then
     warn "ERROR    $name: $repo/$path has no SKILL.md — that is not a skill directory"
@@ -327,14 +380,19 @@ while [ "$i" -lt "$COUNT" ]; do
 
   [ -f "$LOCK" ] || printf '{\n  "version": 1,\n  "mirrors": {}\n}\n' > "$LOCK"
   tmp_lock="$(mktemp)"
+  # `path` is recorded even though it is no longer declared: it is where the skill
+  # was actually found upstream, which is what the catalog links to and what makes
+  # a later move visible in the diff.
   jq --sort-keys \
-     --arg n "$name" --arg repo "$repo" --arg path "$path" --arg ref "$ref" \
+     --arg n "$name" --arg repo "$repo" --arg skill "$skill" --arg path "$path" \
+     --arg ref "$ref" \
      --arg commit "$commit" --arg tree "$upstream_tree" --arg license "$license" \
      --arg homepage "$homepage" --arg notes "$notes" \
      --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      '.version = 1
       | .mirrors[$n] = {
-          repo: $repo, path: $path, ref: $ref, commit: $commit, tree: $tree,
+          repo: $repo, skill: $skill, path: $path, ref: $ref,
+          commit: $commit, tree: $tree,
           license: $license, homepage: $homepage, notes: $notes, synced_at: $at
         }' "$LOCK" > "$tmp_lock" && mv "$tmp_lock" "$LOCK"
 done

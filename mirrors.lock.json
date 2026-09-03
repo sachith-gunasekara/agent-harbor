@@ -8,7 +8,8 @@
       "path": "skills/brainstorming",
       "ref": "main",
       "repo": "obra/superpowers",
-      "synced_at": "2026-09-03T06:33:22Z",
+      "skill": "brainstorming",
+      "synced_at": "2026-09-03T07:06:18Z",
       "tree": "881fc4ac82a25e61a58d332426b5673efe060da0"
     },
     "systematic-debugging": {
@@ -19,7 +20,8 @@
       "path": "skills/systematic-debugging",
       "ref": "main",
       "repo": "obra/superpowers",
-      "synced_at": "2026-09-03T06:33:25Z",
+      "skill": "systematic-debugging",
+      "synced_at": "2026-09-03T07:06:21Z",
       "tree": "ab83fc82f82582e047d96fc516bac9bc03095ee0"
     }
   },

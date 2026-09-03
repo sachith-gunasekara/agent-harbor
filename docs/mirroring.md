@@ -18,15 +18,30 @@ Add an entry:
 ```yaml
 mirrors:
   - repo: obra/superpowers
-    path: skills/brainstorming
+    skill: brainstorming
     ref: main
     license: MIT
     notes: Structured idea generation before committing to an approach.
 ```
 
-`repo`, `path`, and `license` are required. `name` defaults to the basename of
-`path`; set it explicitly to vendor the skill under a different directory name.
-`ref` defaults to `defaults.ref` (the upstream default branch).
+`repo`, `skill`, and `license` are required. `ref` defaults to `defaults.ref` (the
+upstream default branch).
+
+You name the skill, not its location. The sync finds it the same way an installer
+does — the directory called `<skill>` that contains a `SKILL.md` — so you do not
+have to know or track where in the upstream repo it lives. If upstream reorganises
+its directories, the mirror keeps working.
+
+Two optional escape hatches:
+
+- `name:` vendors the skill under a different local directory name, for when the
+  upstream name collides with something already here.
+- `path:` pins an explicit upstream directory, needed only to break a tie when a
+  repo has several directories with the same name. The sync tells you when this
+  happens and lists the candidates.
+
+If the name does not resolve at all, the error lists every skill the repo actually
+publishes, which is usually enough to spot a typo.
 
 Open a PR with that change. Once it is **merged to `main`**, the `mirror-sync`
 workflow fires, clones the upstream, and opens a second PR adding the vendored
@@ -129,7 +144,7 @@ mirror a skill whose name is taken, rename the local copy:
 
 ```yaml
   - repo: someone/repo
-    path: skills/brainstorming
+    skill: brainstorming
     name: someone-brainstorming
 ```
 
