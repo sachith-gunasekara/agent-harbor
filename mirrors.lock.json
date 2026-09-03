@@ -1,0 +1,27 @@
+{
+  "mirrors": {
+    "brainstorming": {
+      "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "homepage": "https://github.com/obra/superpowers",
+      "license": "MIT",
+      "notes": "Structured idea generation before committing to an approach.",
+      "path": "skills/brainstorming",
+      "ref": "main",
+      "repo": "obra/superpowers",
+      "synced_at": "2026-09-03T06:33:22Z",
+      "tree": "881fc4ac82a25e61a58d332426b5673efe060da0"
+    },
+    "systematic-debugging": {
+      "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "homepage": "https://github.com/obra/superpowers",
+      "license": "MIT",
+      "notes": "Root-cause debugging loop that resists guess-and-check fixes.",
+      "path": "skills/systematic-debugging",
+      "ref": "main",
+      "repo": "obra/superpowers",
+      "synced_at": "2026-09-03T06:33:25Z",
+      "tree": "ab83fc82f82582e047d96fc516bac9bc03095ee0"
+    }
+  },
+  "version": 1
+}

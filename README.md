@@ -1,9 +1,14 @@
 # agent-skills
 
-Agent skills I write and reuse across coding agents. Each one is a self-contained
-directory under [`skills/`](skills/) with a `SKILL.md` entry point, so it can be
-installed with `npx skills`, wired up as a Claude Code plugin marketplace, or just
-copied by hand.
+Agent skills I write and reuse across coding agents, plus skills mirrored from other
+repos so everything installs from one place. Each one is a self-contained directory
+under [`skills/`](skills/) with a `SKILL.md` entry point, so it can be installed with
+`npx skills`, wired up as a Claude Code plugin marketplace, or just copied by hand.
+
+- [`skills/own/`](skills/own) — written and maintained here.
+- [`skills/mirrored/`](skills/mirrored) — vendored verbatim from upstream repos and
+  kept in sync automatically. Declared in [`mirrors.yaml`](mirrors.yaml); see
+  [docs/mirroring.md](docs/mirroring.md).
 
 ## Install
 
@@ -26,7 +31,7 @@ npx skills add sachith-gunasekara/agent-skills -a claude-code
 A single skill by URL works too:
 
 ```bash
-npx skills add https://github.com/sachith-gunasekara/agent-skills/tree/main/skills/conventional-commits
+npx skills add https://github.com/sachith-gunasekara/agent-skills/tree/main/skills/own/conventional-commits
 ```
 
 ### As a Claude Code plugin
@@ -45,31 +50,68 @@ that's `~/.claude/skills/` (global) or `.claude/skills/` (per project):
 
 ```bash
 git clone https://github.com/sachith-gunasekara/agent-skills.git
-cp -R agent-skills/skills/conventional-commits ~/.claude/skills/
+cp -R agent-skills/skills/own/conventional-commits ~/.claude/skills/
 ```
 
 ## Skills
 
+<!-- skills:start -->
+### Written here
+
 | Skill | What it does |
 |---|---|
-| [`conventional-commits`](skills/conventional-commits) | Writes Conventional Commits v1.0.0 messages from the actual diff, matches the conventions already in the repo, and stamps the Jira issue key into a git trailer so the Jira–GitHub integration links the commit to the ticket. Ships five scripts for inspecting changes, mining repo conventions, resolving the issue key, committing, and validating a message. |
+| [`conventional-commits`](skills/own/conventional-commits) | Write Conventional Commits v1.0.0 messages and stamp the Jira issue key into a git trailer footer so the Jira–GitHub integration links the commit to the ticket. |
+
+### Mirrored
+
+Vendored verbatim from upstream and kept in sync automatically. Do not edit
+these in place; see [docs/mirroring.md](docs/mirroring.md).
+
+| Skill | Upstream | License | What it does |
+|---|---|---|---|
+| [`brainstorming`](skills/mirrored/brainstorming) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/brainstorming) `b36e082` | MIT | You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. |
+| [`systematic-debugging`](skills/mirrored/systematic-debugging) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/systematic-debugging) `b36e082` | MIT | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes |
+<!-- skills:end -->
 
 ## Layout
 
 ```
+mirrors.yaml            # which upstream skills to mirror — the only file you edit to add one
+mirrors.lock.json       # generated: upstream commit + tree hash per mirrored skill
 skills/
-└── <skill-name>/
-    ├── SKILL.md        # frontmatter + workflow — always the entry point
-    ├── scripts/        # executable, run without loading into context
-    └── references/     # read into context only when needed
+├── own/<skill-name>/
+│   ├── SKILL.md        # frontmatter + workflow — always the entry point
+│   ├── scripts/        # executable, run without loading into context
+│   └── references/     # read into context only when needed
+└── mirrored/
+    ├── NOTICE.md       # generated: upstream + license for each mirrored skill
+    └── <skill-name>/   # verbatim copy of the upstream skill directory
+scripts/                # repo tooling (sync, validate, catalog) — not skill scripts
 ```
 
 `SKILL.md` is what the agent loads up front, so it stays short and points outward.
 Scripts are run, not read — they keep deterministic work out of the context window.
 References are pulled in only when the task actually needs them.
 
-See [docs/adding-a-skill.md](docs/adding-a-skill.md) for the conventions a new skill
-in this repo should follow.
+Anything under `skills/mirrored/` is a byte-for-byte copy of upstream and is
+overwritten on every sync — never edit it in place. To diverge from upstream, fork the
+skill into `skills/own/` and drop the mirror entry.
+
+See [docs/adding-a-skill.md](docs/adding-a-skill.md) for the conventions a new skill in
+this repo should follow, and [docs/mirroring.md](docs/mirroring.md) for how mirroring
+works.
+
+## Repo tooling
+
+```bash
+./scripts/sync-mirrors.sh --dry-run   # what would change against upstream
+./scripts/sync-mirrors.sh --verify    # mirrored skills still match the lockfile
+./scripts/validate-skills.sh          # frontmatter, naming, scripts, referenced paths
+./scripts/gen-catalog.sh              # regenerate README table, catalog, NOTICE, manifests
+```
+
+`sync-mirrors.sh` needs [`yq`](https://github.com/mikefarah/yq) (`brew install yq`);
+`gen-catalog.sh` needs `jq`. CI runs all four on every pull request.
 
 ## License
 

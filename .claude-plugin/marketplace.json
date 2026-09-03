@@ -6,19 +6,26 @@
     "url": "https://github.com/sachith-gunasekara"
   },
   "metadata": {
-    "description": "Agent skills by Sachith Gunasekara.",
+    "description": "Agent skills by Sachith Gunasekara — 1 written here, 2 mirrored from upstream repos. Includes: conventional-commits, brainstorming, systematic-debugging.",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "sachith-skills",
       "source": "./",
-      "description": "Agent skills by Sachith Gunasekara. Currently: conventional-commits (Conventional Commits v1.0.0 messages with Jira issue-key trailers).",
+      "description": "Agent skills by Sachith Gunasekara — 1 written here, 2 mirrored from upstream repos. Includes: conventional-commits, brainstorming, systematic-debugging.",
       "version": "0.1.0",
-      "author": { "name": "Sachith Gunasekara" },
+      "author": {
+        "name": "Sachith Gunasekara"
+      },
       "homepage": "https://github.com/sachith-gunasekara/agent-skills",
       "license": "MIT",
-      "keywords": ["skills", "git", "conventional-commits", "jira"]
+      "keywords": [
+        "skills",
+        "git",
+        "conventional-commits",
+        "jira"
+      ]
     }
   ]
 }
