@@ -1,0 +1,60 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install yq
+        run: |
+          sudo curl -fsSL -o /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.47.1/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Lint workflows
+        # Catches what plain YAML parsing cannot: invalid context references,
+        # bad expressions, and shell problems inside `run:` blocks. A workflow
+        # with those faults is accepted by GitHub and then fails at startup with
+        # no usable log, so it has to be caught here.
+        run: |
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
+            | sudo tar xz -C /usr/local/bin actionlint
+          actionlint -color
+
+      - name: Shell syntax
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            bash -n "$f" || { echo "syntax error: $f"; fail=1; }
+          done < <(find scripts skills -name '*.sh' -type f)
+          exit $fail
+
+      - name: Lint shell scripts
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          # Repo tooling is held to shellcheck; mirrored skills are upstream's code
+          # and are deliberately not linted here.
+          shellcheck -S warning scripts/*.sh skills/own/*/scripts/*.sh
+
+      - name: Validate skills
+        run: ./scripts/validate-skills.sh
+
+      - name: Generated files are current
+        run: ./scripts/gen-catalog.sh --check
+
+      - name: Mirrored skills match the lockfile
+        run: ./scripts/sync-mirrors.sh --verify
+
+      - name: Skills are discoverable
+        run: npx --yes skills add . -l

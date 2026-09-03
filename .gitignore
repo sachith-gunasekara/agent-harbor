@@ -9,11 +9,14 @@
 .vscode/
 *.swp
 
-# Built skill bundles / packaging output
-dist/
+# Built skill bundles / packaging output.
+# Anchored to the repo root on purpose: skills/mirrored/ is a byte-for-byte copy of
+# upstream, and an unanchored `dist/` or `node_modules/` would silently drop files
+# from a mirrored skill, breaking the tree-hash comparison the sync relies on.
+/dist/
 *.skill
 *.zip
 
 # Node (only if a skill ever needs tooling)
-node_modules/
+/node_modules/
 npm-debug.log*

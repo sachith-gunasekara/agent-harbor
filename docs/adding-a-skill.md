@@ -1,15 +1,22 @@
 # Adding a skill to this repo
 
+This is for skills **written here**, which live in `skills/own/`. To vendor an existing
+skill from someone else's repo, add it to `mirrors.yaml` instead — see
+[mirroring.md](mirroring.md).
+
 ## 1. Scaffold
 
 ```bash
-mkdir -p skills/<skill-name>/{scripts,references}
-touch skills/<skill-name>/SKILL.md
+mkdir -p skills/own/<skill-name>/{scripts,references}
+touch skills/own/<skill-name>/SKILL.md
 ```
 
 The directory name is the skill's identity — lowercase, hyphenated, and identical to
 the `name` in the frontmatter. Both `scripts/` and `references/` are optional; a skill
 that is pure prose is just a `SKILL.md`.
+
+The name also has to be unique across `skills/own/` *and* `skills/mirrored/`, since
+that is what an installer resolves; `./scripts/validate-skills.sh` fails on collisions.
 
 ## 2. Write the frontmatter
 
@@ -56,23 +63,23 @@ it to the workflow and the decisions — a few hundred lines at most.
 
 ## 5. Register it
 
-- Add a row to the table in the top-level [`README.md`](../README.md).
-- Nothing to change in `.claude-plugin/` — the plugin picks up everything under
-  `skills/` automatically.
+```bash
+./scripts/gen-catalog.sh
+```
+
+That regenerates the table in the top-level [`README.md`](../README.md),
+[`skill-library.md`](skill-library.md), and the descriptions in `.claude-plugin/` from
+the frontmatter you just wrote. Don't hand-edit those regions — CI fails if they are
+stale. The plugin manifests otherwise pick up everything under `skills/` automatically.
 
 ## 6. Check it
 
 ```bash
-# frontmatter present and parseable
-head -5 skills/<skill-name>/SKILL.md
-
-# scripts are syntactically valid and executable
-for f in skills/<skill-name>/scripts/*.sh; do bash -n "$f" && test -x "$f" || echo "FAIL $f"; done
-
-# every path SKILL.md mentions actually exists
-grep -oE '(scripts|references)/[A-Za-z0-9._-]+' skills/<skill-name>/SKILL.md | sort -u | \
-  while read -r p; do test -e "skills/<skill-name>/$p" || echo "missing: $p"; done
-
-# installs cleanly
-npx skills add . -l
+./scripts/validate-skills.sh      # frontmatter, name/dir agreement, uniqueness,
+                                  # referenced paths, script syntax + exec bit
+./scripts/gen-catalog.sh --check  # generated regions are current
+npx skills add . -l               # installs cleanly and shows up in discovery
 ```
+
+`validate-skills.sh` is the automated form of the checks this section used to spell
+out, and it runs on every pull request.
