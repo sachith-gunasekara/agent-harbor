@@ -1,4 +1,4 @@
-# agent-skills
+# agent-harbor
 
 Agent skills I write and reuse across coding agents, plus skills mirrored from other
 repos so everything installs from one place. Each one is a self-contained directory
@@ -15,23 +15,23 @@ under [`skills/`](skills/) with a `SKILL.md` entry point, so it can be installed
 Install everything in this repo:
 
 ```bash
-npx skills add sachith-gunasekara/agent-skills --all
+npx skills add sachith-gunasekara/agent-harbor --all
 ```
 
 Pick interactively, or target one skill:
 
 ```bash
-npx skills add sachith-gunasekara/agent-skills            # prompts for which skills and which agents
-npx skills add sachith-gunasekara/agent-skills -l         # list what's available, install nothing
-npx skills add sachith-gunasekara/agent-skills -s conventional-commits
-npx skills add sachith-gunasekara/agent-skills -g         # install globally instead of into the project
-npx skills add sachith-gunasekara/agent-skills -a claude-code
+npx skills add sachith-gunasekara/agent-harbor            # prompts for which skills and which agents
+npx skills add sachith-gunasekara/agent-harbor -l         # list what's available, install nothing
+npx skills add sachith-gunasekara/agent-harbor -s conventional-commits
+npx skills add sachith-gunasekara/agent-harbor -g         # install globally instead of into the project
+npx skills add sachith-gunasekara/agent-harbor -a claude-code
 ```
 
 A single skill by URL works too:
 
 ```bash
-npx skills add https://github.com/sachith-gunasekara/agent-skills/tree/main/skills/own/conventional-commits
+npx skills add https://github.com/sachith-gunasekara/agent-harbor/tree/main/skills/own/conventional-commits
 ```
 
 ### As a Claude Code plugin
@@ -39,7 +39,7 @@ npx skills add https://github.com/sachith-gunasekara/agent-skills/tree/main/skil
 The repo also carries a `.claude-plugin/marketplace.json`, so inside Claude Code:
 
 ```
-/plugin marketplace add sachith-gunasekara/agent-skills
+/plugin marketplace add sachith-gunasekara/agent-harbor
 /plugin install sachith-skills@sachith-skills
 ```
 
@@ -49,8 +49,8 @@ Copy the skill directory into wherever your agent looks for skills — for Claud
 that's `~/.claude/skills/` (global) or `.claude/skills/` (per project):
 
 ```bash
-git clone https://github.com/sachith-gunasekara/agent-skills.git
-cp -R agent-skills/skills/own/conventional-commits ~/.claude/skills/
+git clone https://github.com/sachith-gunasekara/agent-harbor.git
+cp -R agent-harbor/skills/own/conventional-commits ~/.claude/skills/
 ```
 
 ## Skills
