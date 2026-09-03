@@ -28,9 +28,14 @@ mirrors:
 `path`; set it explicitly to vendor the skill under a different directory name.
 `ref` defaults to `defaults.ref` (the upstream default branch).
 
-Commit that to `main`. The `mirror-sync` workflow fires on any change to
-`mirrors.yaml`, clones the upstream, and opens a PR adding the skill. Review the
-diff like any other dependency bump, then merge.
+Open a PR with that change. Once it is **merged to `main`**, the `mirror-sync`
+workflow fires, clones the upstream, and opens a second PR adding the vendored
+skill. Review that diff like any other dependency bump, then merge it too.
+
+So adding a mirror is two merges: one for the intent (`mirrors.yaml`), one for the
+content (`skills/mirrored/`). The workflow runs on `main` only and never on a
+feature branch — it opens pull requests and pushes branches, so an unreviewed
+version of it must not be able to act on the repo.
 
 To do it locally instead:
 

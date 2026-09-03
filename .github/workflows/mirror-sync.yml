@@ -2,9 +2,15 @@ name: mirror-sync
 
 # Keeps skills/mirrored/ in step with the upstreams declared in mirrors.yaml.
 #
-# Runs when mirrors.yaml changes, weekly to catch upstream drift, and on demand.
-# Opens one pull request per skill that actually changed; skills whose upstream
+# Runs on main only. The flow is: someone opens a PR editing mirrors.yaml, it is
+# reviewed and merged, and only then does this fire — cloning each upstream and
+# opening one pull request per skill that actually changed. Skills whose upstream
 # content still hashes identically produce no PR at all.
+#
+# Running on main only matters. This workflow opens pull requests and pushes
+# branches, so letting it run from a feature branch would mean an unreviewed
+# version of the sync could raise PRs against the repo. mirrors.yaml has to be
+# merged before it takes effect.
 
 on:
   push:
@@ -37,6 +43,10 @@ concurrency:
 
 jobs:
   detect:
+    # The push trigger is already filtered to main, but workflow_dispatch can be
+    # fired from any branch, so gate the work explicitly rather than relying on
+    # the trigger alone.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.plan.outputs.changed }}
