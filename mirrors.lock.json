@@ -12,6 +12,18 @@
       "synced_at": "2026-09-03T07:06:18Z",
       "tree": "881fc4ac82a25e61a58d332426b5673efe060da0"
     },
+    "find-skills": {
+      "commit": "435076e78988e1e6ec40d00b0b1d76bdbbc5419a",
+      "homepage": "https://github.com/vercel-labs/skills",
+      "license": "MIT",
+      "notes": "Finds and installs agent skills, which is squarely this repo's business.",
+      "path": "skills/find-skills",
+      "ref": "main",
+      "repo": "vercel-labs/skills",
+      "skill": "find-skills",
+      "synced_at": "2026-09-03T07:55:26Z",
+      "tree": "76a98a285cb0434f3d39e1a873823556330e398b"
+    },
     "systematic-debugging": {
       "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
       "homepage": "https://github.com/obra/superpowers",

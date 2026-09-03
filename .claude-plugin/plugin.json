@@ -1,7 +1,7 @@
 {
   "name": "sachith-skills",
   "version": "0.1.0",
-  "description": "Agent skills by Sachith Gunasekara — 1 written here, 2 mirrored from upstream repos. Includes: conventional-commits, brainstorming, systematic-debugging.",
+  "description": "Agent skills by Sachith Gunasekara — 1 written here, 3 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging.",
   "author": {
     "name": "Sachith Gunasekara"
   },
