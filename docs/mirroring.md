@@ -5,7 +5,7 @@ Ones written elsewhere are **mirrored** into `skills/mirrored/` — vendored cop
 re-synced automatically, so that everything installs from a single source:
 
 ```bash
-npx skills add sachith-gunasekara/agent-skills --all
+npx skills add sachith-gunasekara/agent-harbor --all
 ```
 
 You never add a mirrored skill by copying files. You add a line to

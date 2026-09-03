@@ -5,7 +5,7 @@
 Every skill this repo publishes. Install any of them with:
 
 ```bash
-npx skills add sachith-gunasekara/agent-skills -s <skill-name>
+npx skills add sachith-gunasekara/agent-harbor -s <skill-name>
 ```
 
 ## Written here
