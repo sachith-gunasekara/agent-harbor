@@ -54,3 +54,14 @@ Why it is here: Root-cause debugging loop that resists guess-and-check fixes.
 - Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
 - License: MIT
 - Vendored at: [`skills/mirrored/systematic-debugging`](../skills/mirrored/systematic-debugging)
+
+### `verification-before-completion`
+
+Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+
+Why it is here: Checks the work actually runs before calling it done, instead of assuming.
+
+- Upstream: [obra/superpowers/skills/verification-before-completion](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/verification-before-completion)
+- Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
+- License: MIT
+- Vendored at: [`skills/mirrored/verification-before-completion`](../skills/mirrored/verification-before-completion)
