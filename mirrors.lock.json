@@ -35,6 +35,18 @@
       "skill": "systematic-debugging",
       "synced_at": "2026-09-03T07:06:21Z",
       "tree": "ab83fc82f82582e047d96fc516bac9bc03095ee0"
+    },
+    "verification-before-completion": {
+      "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "homepage": "https://github.com/obra/superpowers",
+      "license": "MIT",
+      "notes": "Checks the work actually runs before calling it done, instead of assuming.",
+      "path": "skills/verification-before-completion",
+      "ref": "main",
+      "repo": "obra/superpowers",
+      "skill": "verification-before-completion",
+      "synced_at": "2026-09-04T06:05:07Z",
+      "tree": "a4cb0b69aaefeab540947a7f1642bdaad810e37a"
     }
   },
   "version": 1
