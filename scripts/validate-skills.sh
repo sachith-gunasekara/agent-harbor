@@ -11,7 +11,9 @@
 #   - `name` matches the directory name and is lowercase/digits/hyphens
 #   - `description` is non-empty and under 1024 characters
 #   - `name` is unique across the whole repo
-#   - every scripts/ or references/ path mentioned in SKILL.md exists
+#   - every scripts/ or references/ path mentioned in SKILL.md exists. Links that
+#     reach outside the skill (../other-skill/...) are warned about, not failed —
+#     they resolve against whatever else is installed, not against this repo.
 #   - every scripts/*.sh passes `bash -n` and has its executable bit set
 #
 # Usage:
@@ -124,12 +126,29 @@ for dir in "${SKILL_DIRS[@]}"; do
   # Referenced paths must exist. Only flag paths that look like real file
   # references (they have an extension) to avoid tripping on prose like
   # "scripts/ directory".
+  #
+  # The pattern takes the whole path token, leading ../ segments and all. Without
+  # that leading [A-Za-z0-9._/-]* the match could start in the middle of a path:
+  # a cross-skill link like ../other-skill/references/x.md would be read as a
+  # local references/x.md and reported missing, which is how two mirrored skills
+  # came to fail a check neither of them was breaking.
   while IFS= read -r p; do
     [ -n "$p" ] || continue
+    case "$p" in
+      ../* | */../*)
+        # Points outside the skill, at a sibling. Whether it resolves depends on
+        # what else the user installed, which is not this check's business — and
+        # for a mirrored skill the text is upstream's to fix, not ours. Same
+        # reasoning as the non-executable script warning below: say so, do not
+        # fail on it.
+        [ -e "$dir/$p" ] || warn "$dir: SKILL.md links to '$p', outside the skill"
+        continue
+        ;;
+    esac
     if [ ! -e "$dir/$p" ]; then
       fail "$dir: SKILL.md references '$p' which does not exist"
     fi
-  done < <(grep -oE '(scripts|references|assets)/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+' "$skill_md" 2>/dev/null | sort -u)
+  done < <(grep -oE '[A-Za-z0-9._/-]*(scripts|references|assets)/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+' "$skill_md" 2>/dev/null | sort -u)
 
   # Shell scripts must parse and be executable.
   while IFS= read -r sh; do
