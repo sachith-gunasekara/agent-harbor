@@ -61,6 +61,7 @@ cp -R agent-harbor/skills/own/conventional-commits ~/.claude/skills/
 | Skill | What it does |
 |---|---|
 | [`conventional-commits`](skills/own/conventional-commits) | Write Conventional Commits v1.0.0 messages and stamp the Jira issue key into a git trailer footer so the Jira–GitHub integration links the commit to the ticket. |
+| [`python-test`](skills/own/python-test) | Best practices and patterns for testing Python applications using pytest, pytest-xdist, and testcontainers. |
 
 ### Mirrored
 

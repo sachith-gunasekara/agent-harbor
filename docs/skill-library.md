@@ -16,6 +16,12 @@ Write Conventional Commits v1.0.0 messages and stamp the Jira issue key into a g
 
 - Source: [`skills/own/conventional-commits`](../skills/own/conventional-commits)
 
+### `python-test`
+
+Best practices and patterns for testing Python applications using pytest, pytest-xdist, and testcontainers. Covers unit testing, integration testing with mocks, and integration testing with real resources.
+
+- Source: [`skills/own/python-test`](../skills/own/python-test)
+
 ## Mirrored
 
 These are copies of skills maintained elsewhere. They are re-synced
