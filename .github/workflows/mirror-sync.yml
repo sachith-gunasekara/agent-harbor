@@ -154,9 +154,21 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Validate the result
+        id: validate
+        # Allowed to fail, and deliberately so. A mirror that does not validate is
+        # exactly the case a human most needs to look at, but failing the job here
+        # skips every step below — including the one that pushes the branch — so
+        # the sync output is discarded and nothing is left to review. Record the
+        # result, open the pull request anyway with the failure written into its
+        # body, and fail the job at the end instead.
+        continue-on-error: true
         run: |
-          ./scripts/validate-skills.sh
-          ./scripts/sync-mirrors.sh --verify
+          rc=0
+          {
+            ./scripts/validate-skills.sh && ./scripts/sync-mirrors.sh --verify
+          } > validation.txt 2>&1 || rc=$?
+          cat validation.txt
+          exit $rc
 
       - name: Summarise upstream changes
         id: changes
@@ -191,6 +203,21 @@ jobs:
             echo ""
             echo "\`${{ matrix.skill }}\` was **${{ steps.sync.outputs.action }}** by \`mirror-sync\`."
             echo ""
+            if [ "${{ steps.validate.outcome }}" = "failure" ]; then
+              echo "> [!WARNING]"
+              echo "> **This mirror does not pass \`validate-skills.sh\`.** The pull request is"
+              echo "> opened regardless so the diff can be reviewed and the branch is not lost,"
+              echo "> but the run is red and this should not be merged as it stands."
+              echo ">"
+              echo "> Remember a mirrored directory has to stay byte-identical to upstream, so"
+              echo "> the fix belongs upstream or in the checks themselves — not in"
+              echo "> \`skills/mirrored/\`."
+              echo ""
+              echo '```'
+              cat validation.txt
+              echo '```'
+              echo ""
+            fi
             if [ "${{ steps.sync.outputs.action }}" = "removed" ]; then
               echo "Its record was dropped from \`mirrors.yaml\`, so the vendored copy, its"
               echo "lockfile entry and its generated rows are being deleted."
@@ -280,7 +307,12 @@ jobs:
         # The branch is already pushed at this point, so this only has to create the
         # pull request. A PR opened this way will not trigger validate.yml — that is
         # the cost of the fallback, and it is called out in the PR body.
-        if: steps.cpr.outcome == 'failure'
+        # `!= 'success'` rather than `== 'failure'`: a skipped step reports its
+        # outcome as 'skipped', so the narrower test silently declined to fire in
+        # exactly the situation the fallback exists for. `success()` keeps the
+        # implicit guard that a custom `if:` would otherwise remove, so this still
+        # does not run after a hard failure earlier in the job.
+        if: success() && steps.cpr.outcome != 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -304,36 +336,79 @@ jobs:
 
       - name: Report the outcome
         # Runs whatever happened, so the summary is written even when both attempts
-        # failed. Fails the job only if no pull request exists at the end.
+        # failed.
+        #
+        # It has to work out *why* there is no pull request rather than assume. It
+        # used to state flatly that both tokens were refused and that the branch had
+        # been pushed; when the job died before the create-pull-request step, both
+        # halves were false and the summary sent people to check token settings for
+        # a problem that had nothing to do with them.
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           skill='${{ matrix.skill }}'
+          validate='${{ steps.validate.outcome }}'
+          cpr='${{ steps.cpr.outcome }}'
+
           if gh pr view "mirror/$skill" --json number >/dev/null 2>&1; then
             url="$(gh pr view "mirror/$skill" --json url --jq .url)"
+            if [ "$validate" = "failure" ]; then
+              {
+                echo "### \`$skill\`: $url — opened, but does not validate"
+                echo ""
+                echo "The diff is there to review and the branch is pushed. The checks that"
+                echo "failed are quoted in the pull request body. Not mergeable as it stands."
+              } >> "$GITHUB_STEP_SUMMARY"
+              echo "::error::$skill was mirrored and its PR opened ($url), but validation failed. See the PR body."
+              exit 1
+            fi
             echo "### \`$skill\`: $url" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+
+          # No pull request. Which of the two ways we got here?
+          if [ "$cpr" = "failure" ] || [ "$cpr" = "success" ]; then
+            {
+              echo "### Could not open a pull request for \`$skill\`"
+              echo ""
+              echo "The branch \`mirror/$skill\` was pushed, so nothing is lost — only the"
+              echo "pull request is missing. Both tokens were refused."
+              echo ""
+              echo "Fix whichever you intend to use:"
+              echo ""
+              echo "- **\`MIRROR_PAT\`** — needs *Pull requests: read and write*, and repository"
+              echo "  access covering this repo. This is the one to prefer: pull requests"
+              echo "  created with the workflow token do not trigger \`validate.yml\`."
+              echo "- **Workflow token** — needs Settings → Actions → General → *Allow GitHub"
+              echo "  Actions to create and approve pull requests*."
+              echo ""
+              echo "Or open it by hand:"
+              echo ""
+              echo '```'
+              echo "gh pr create --base main --head mirror/$skill"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::No pull request could be opened for $skill. The branch was pushed; see the job summary."
+            exit 1
+          fi
+
           {
-            echo "### Could not open a pull request for \`$skill\`"
+            echo "### \`$skill\` never got as far as opening a pull request"
             echo ""
-            echo "The branch \`mirror/$skill\` was pushed, so nothing is lost — only the"
-            echo "pull request is missing. Both tokens were refused."
+            echo "A step before \`Open or update the pull request\` failed, so that step was"
+            echo "skipped. **The branch was not pushed** — the push happens inside it — so"
+            echo "the sync output went with the runner and there is nothing to review."
             echo ""
-            echo "Fix whichever you intend to use:"
+            echo "This is not a token problem. Read the failing step in this job; the"
+            echo "usual cause is \`Sync $skill\` erroring while resolving upstream."
             echo ""
-            echo "- **\`MIRROR_PAT\`** — needs *Pull requests: read and write*, and repository"
-            echo "  access covering this repo. This is the one to prefer: pull requests"
-            echo "  created with the workflow token do not trigger \`validate.yml\`."
-            echo "- **Workflow token** — needs Settings → Actions → General → *Allow GitHub"
-            echo "  Actions to create and approve pull requests*."
-            echo ""
-            echo "Or open it by hand:"
+            echo "To reproduce locally:"
             echo ""
             echo '```'
-            echo "gh pr create --base main --head mirror/$skill"
+            echo "./scripts/sync-mirrors.sh --skill $skill && ./scripts/gen-catalog.sh"
+            echo "./scripts/validate-skills.sh"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::error::No pull request could be opened for $skill. The branch was pushed; see the job summary."
+          echo "::error::$skill failed before its pull request could be opened, and no branch was pushed. See the job summary."
           exit 1
