@@ -106,13 +106,48 @@ you use.
 
 ## Removing a mirror
 
-Delete the entry from `mirrors.yaml`. The next sync notices the lockfile has an
-entry `mirrors.yaml` no longer declares, and opens a PR deleting both the vendored
-directory and the lock entry.
+Delete the entry from `mirrors.yaml` and merge that. The next sync notices the
+lockfile holds an entry `mirrors.yaml` no longer declares, and opens a pull request
+that deletes:
 
-As a safety measure, removal is skipped entirely if any entry in `mirrors.yaml`
-failed to parse — otherwise a typo in one entry could be read as "this mirror was
-removed" and delete a skill you still wanted.
+- the vendored directory, `skills/mirrored/<name>/`
+- its `mirrors.lock.json` entry
+- its rows in the README table, the catalog and `NOTICE.md`, which are regenerated
+
+Same two-merge shape as adding one: merge the intent, review the content.
+
+To do it locally: drop the entry and run `./scripts/sync-mirrors.sh`.
+
+Two safety properties, both covered by [`test-sync.sh`](../scripts/test-sync.sh):
+
+- **A malformed entry never causes a removal.** If any entry fails to parse, the
+  prune step is skipped entirely — otherwise a typo could read as "this mirror was
+  removed" and silently delete a skill you still wanted.
+- **`--dry-run` deletes nothing**, so you can always preview a removal first.
+
+Re-adding a removed entry vendors it again from scratch, so removal is not a
+one-way door.
+
+## Tests
+
+```bash
+./scripts/test-sync.sh          # everything
+./scripts/test-sync.sh removing # just the tests whose name matches
+```
+
+The suite builds throwaway upstream repositories and a throwaway harbor in a temp
+directory, and points the sync at them with `MIRROR_GIT_BASE`. It is therefore
+offline, fast, and cannot fail because a real upstream moved. Nothing it does
+touches this repository.
+
+It runs in CI on every pull request, and locally on push:
+
+```bash
+pre-commit install --hook-type pre-push
+```
+
+It is a pre-push rather than pre-commit hook because it takes about ten seconds —
+long enough to be irritating on every commit.
 
 ## Never edit a mirrored skill
 
