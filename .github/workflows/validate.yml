@@ -47,6 +47,11 @@ jobs:
           python -m pip install --quiet pre-commit
           pre-commit run --all-files --show-diff-on-failure --color always
 
+      - name: sync-mirrors test suite
+        # Not part of the pre-commit run above: it is a pre-push hook locally, so
+        # CI has to invoke it explicitly. Offline — uses local fixture repos.
+        run: ./scripts/test-sync.sh
+
       - name: Skills are discoverable
         # Not a lint: proves the skills/own/ + skills/mirrored/ catalog layout is
         # still something an installer can resolve.

@@ -73,3 +73,15 @@ repos:
         language: script
         pass_filenames: false
         always_run: true
+
+      - id: test-sync
+        name: sync-mirrors test suite
+        description: >-
+          Runs against local fixture repositories, so it is offline and touches
+          nothing in this repo. At ~11s it is too slow for every commit, so it runs
+          on push. Enable with: pre-commit install --hook-type pre-push
+        entry: ./scripts/test-sync.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

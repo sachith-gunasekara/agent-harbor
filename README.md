@@ -107,7 +107,8 @@ works.
 Set up once, and the rest is automatic:
 
 ```bash
-brew install yq pre-commit && pre-commit install
+brew install yq pre-commit
+pre-commit install && pre-commit install --hook-type pre-push
 ```
 
 That wires the same checks CI runs into your commits — shellcheck, actionlint, skill
@@ -123,6 +124,7 @@ The scripts are still there to run directly:
 ./scripts/validate-skills.sh          # frontmatter, naming, scripts, referenced paths
 ./scripts/gen-catalog.sh              # regenerate README table, catalog, NOTICE, manifests
 ./scripts/gen-catalog.sh --check      # ...or just report staleness
+./scripts/test-sync.sh                # offline tests for the sync, incl. removal
 ```
 
 `sync-mirrors.sh` needs [`yq`](https://github.com/mikefarah/yq); `gen-catalog.sh` needs

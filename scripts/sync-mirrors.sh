@@ -82,11 +82,23 @@ dir_tree_oid() {
   printf '%s' "$oid"
 }
 
+# Where an `owner/name` in mirrors.yaml is fetched from. Overridable so the test
+# suite can point at local fixture repositories and run without a network.
+MIRROR_GIT_BASE="${MIRROR_GIT_BASE:-https://github.com/}"
+
+repo_url() {
+  local repo="$1"
+  case "$MIRROR_GIT_BASE" in
+    */) printf '%s%s.git' "$MIRROR_GIT_BASE" "$repo" ;;
+    *)  printf '%s/%s.git' "$MIRROR_GIT_BASE" "$repo" ;;
+  esac
+}
+
 # Resolve a branch / tag / SHA to a concrete commit without cloning.
 resolve_commit() {
   local repo="$1" ref="$2" url out
   if printf '%s' "$ref" | grep -qE '^[0-9a-f]{40}$'; then printf '%s' "$ref"; return 0; fi
-  url="https://github.com/${repo}.git"
+  url="$(repo_url "$repo")"
   if [ "$ref" = "HEAD" ]; then
     out="$(git ls-remote "$url" HEAD 2>/dev/null | head -n1 | cut -f1)"
   else
@@ -103,7 +115,7 @@ resolve_commit() {
 fetch_repo() {
   local repo="$1" commit="$2" dest="$3"
   git init -q "$dest" >/dev/null 2>&1 || return 1
-  git -C "$dest" remote add origin "https://github.com/${repo}.git" >/dev/null 2>&1 || return 1
+  git -C "$dest" remote add origin "$(repo_url "$repo")" >/dev/null 2>&1 || return 1
   git -C "$dest" fetch -q --depth 1 --filter=blob:none origin "$commit" >/dev/null 2>&1 || return 1
   return 0
 }
