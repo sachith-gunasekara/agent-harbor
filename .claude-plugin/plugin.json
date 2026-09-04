@@ -1,7 +1,7 @@
 {
   "name": "agent-harbor",
   "version": "0.1.0",
-  "description": "Agent skills by Sachith Gunasekara — 1 written here, 3 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging.",
+  "description": "Agent skills by Sachith Gunasekara — 1 written here, 4 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging, verification-before-completion.",
   "author": {
     "name": "Sachith Gunasekara"
   },

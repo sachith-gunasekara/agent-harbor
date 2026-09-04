@@ -6,14 +6,14 @@
     "url": "https://github.com/sachith-gunasekara"
   },
   "metadata": {
-    "description": "Agent skills by Sachith Gunasekara — 1 written here, 3 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging.",
+    "description": "Agent skills by Sachith Gunasekara — 1 written here, 4 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging, verification-before-completion.",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "agent-harbor",
       "source": "./",
-      "description": "Agent skills by Sachith Gunasekara — 1 written here, 3 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging.",
+      "description": "Agent skills by Sachith Gunasekara — 1 written here, 4 mirrored from upstream repos. Includes: conventional-commits, brainstorming, find-skills, systematic-debugging, verification-before-completion.",
       "version": "0.1.0",
       "author": {
         "name": "Sachith Gunasekara"
