@@ -60,3 +60,9 @@ mirrors:
     ref: main
     license: MIT
     notes: How to author a skill that actually fires and holds up when followed.
+
+  - repo: DeerHide/agent_skills
+    skill: python-test
+    ref: main
+    license: MIT
+    notes: pytest practice — unit, mocked-integration, and testcontainers layers.
