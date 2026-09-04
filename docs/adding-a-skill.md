@@ -94,3 +94,16 @@ Or individually:
 
 `validate-skills.sh` is the automated form of the checks this section used to spell
 out, and it runs on every pull request.
+
+## 7. Open the PR
+
+Use the skill template, which asks the questions worth answering about a skill —
+what it does, when it should fire, and why it is a skill rather than a prompt:
+
+```
+https://github.com/sachith-gunasekara/agent-harbor/compare/main...<branch>?expand=1&template=skill.md
+```
+
+`gh pr create` does not apply templates, so paste the body from
+[`.github/PULL_REQUEST_TEMPLATE/skill.md`](../.github/PULL_REQUEST_TEMPLATE/skill.md)
+if you use the CLI.
