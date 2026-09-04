@@ -54,3 +54,9 @@ mirrors:
     ref: main
     license: MIT
     notes: Checks the work actually runs before calling it done, instead of assuming.
+
+  - repo: obra/superpowers
+    skill: writing-skills
+    ref: main
+    license: MIT
+    notes: How to author a skill that actually fires and holds up when followed.
