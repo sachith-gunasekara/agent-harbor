@@ -238,10 +238,15 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Open or update the pull request
+        id: cpr
+        # Allowed to fail: the branch is pushed before the pull request is created,
+        # so a refusal here loses nothing and the fallback below can still open it.
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v7
         with:
-          # A PAT is needed for validate.yml to run on the PR — pull requests
-          # created with the default GITHUB_TOKEN do not trigger other workflows.
+          # A PAT is preferred because pull requests created with the default
+          # GITHUB_TOKEN do not trigger other workflows, so validate.yml would
+          # never run on a mirror PR.
           token: ${{ secrets.MIRROR_PAT || secrets.GITHUB_TOKEN }}
           branch: mirror/${{ matrix.skill }}
           delete-branch: true
@@ -262,30 +267,73 @@ jobs:
             docs/skill-library.md
             .claude-plugin
 
-      - name: Explain a pull request failure
-        # Only fires when the step above failed. Steps skip on failure by default,
-        # which is why the PAT warning used to be invisible in exactly the run that
-        # needed it — it sat after the step that failed.
-        if: failure()
+      - name: Open the pull request with the workflow token
+        # Reached only when the step above was refused. The two tokens fail for
+        # different reasons and are not interchangeable, so trying the other one is
+        # a real second chance rather than a retry:
+        #
+        #   MIRROR_PAT     fails with "Resource not accessible by personal access
+        #                  token" when the token lacks Pull requests: write
+        #   GITHUB_TOKEN   fails with "GitHub Actions is not permitted to create or
+        #                  approve pull requests" when that repo setting is off
+        #
+        # The branch is already pushed at this point, so this only has to create the
+        # pull request. A PR opened this way will not trigger validate.yml — that is
+        # the cost of the fallback, and it is called out in the PR body.
+        if: steps.cpr.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          skill='${{ matrix.skill }}'
+          if gh pr view "mirror/$skill" --json number >/dev/null 2>&1; then
+            echo "a pull request for mirror/$skill already exists"
+            exit 0
+          fi
           {
-            echo "### Could not open the pull request"
+            cat pr-body.md
             echo ""
-            echo "The branch \`mirror/${{ matrix.skill }}\` was pushed successfully, so no"
-            echo "work is lost — only the pull request could not be created."
+            echo "> ⚠️ Opened with the workflow token because \`MIRROR_PAT\` was refused."
+            echo "> \`validate\` will not run here. See [docs/mirroring.md](docs/mirroring.md)."
+          } > fallback-body.md
+          gh pr create \
+            --base main --head "mirror/$skill" \
+            --title "chore(mirror): ${{ steps.sync.outputs.action }} \`$skill\`" \
+            --body-file fallback-body.md \
+            --label mirror --label automated
+          echo "::warning::MIRROR_PAT was refused, so this PR was opened with the workflow token and validate.yml will not run on it. Give the token Pull requests: read and write."
+
+      - name: Report the outcome
+        # Runs whatever happened, so the summary is written even when both attempts
+        # failed. Fails the job only if no pull request exists at the end.
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          skill='${{ matrix.skill }}'
+          if gh pr view "mirror/$skill" --json number >/dev/null 2>&1; then
+            url="$(gh pr view "mirror/$skill" --json url --jq .url)"
+            echo "### \`$skill\`: $url" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "### Could not open a pull request for \`$skill\`"
             echo ""
-            echo "If the error above is *GitHub Actions is not permitted to create or"
-            echo "approve pull requests*, fix it in one of two ways:"
+            echo "The branch \`mirror/$skill\` was pushed, so nothing is lost — only the"
+            echo "pull request is missing. Both tokens were refused."
             echo ""
-            echo "1. Set the \`MIRROR_PAT\` secret (preferred — it also lets \`validate.yml\`"
-            echo "   run on the resulting pull request)."
-            echo "2. Or enable Settings → Actions → General → *Allow GitHub Actions to"
-            echo "   create and approve pull requests*."
+            echo "Fix whichever you intend to use:"
             echo ""
-            echo "Meanwhile you can open it by hand:"
+            echo "- **\`MIRROR_PAT\`** — needs *Pull requests: read and write*, and repository"
+            echo "  access covering this repo. This is the one to prefer: pull requests"
+            echo "  created with the workflow token do not trigger \`validate.yml\`."
+            echo "- **Workflow token** — needs Settings → Actions → General → *Allow GitHub"
+            echo "  Actions to create and approve pull requests*."
+            echo ""
+            echo "Or open it by hand:"
             echo ""
             echo '```'
-            echo "gh pr create --base main --head mirror/${{ matrix.skill }}"
+            echo "gh pr create --base main --head mirror/$skill"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::error::Could not open the pull request for ${{ matrix.skill }}. The branch was pushed; see the job summary for the two ways to fix this."
+          echo "::error::No pull request could be opened for $skill. The branch was pushed; see the job summary."
+          exit 1

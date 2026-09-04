@@ -263,13 +263,23 @@ Two things about that config are load-bearing:
 parse fine and still be rejected by GitHub at startup — an invalid context
 reference is the usual cause — and it fails in under a second with no usable log.
 
-### One-time setup: `MIRROR_PAT`
+### Opening pull requests: `MIRROR_PAT`
 
-Without this, the sync pushes its branch and then fails to open the pull request:
+The sync tries two tokens in turn, because they fail for different reasons and are
+not interchangeable:
 
-```
-GitHub Actions is not permitted to create or approve pull requests.
-```
+| Token | Fails with | Fix |
+|---|---|---|
+| `MIRROR_PAT` | `Resource not accessible by personal access token` | give it **Pull requests: read and write** |
+| workflow token | `GitHub Actions is not permitted to create or approve pull requests` | Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests* |
+
+Either alone is enough to get a pull request opened. Prefer the PAT anyway: a pull
+request created with the workflow token **does not trigger other workflows**, so
+`validate.yml` never runs on it and the mirror arrives unchecked. The fallback says
+so in the pull request body when it is used.
+
+If both are refused the job fails, but the branch has already been pushed, so
+nothing is lost — the job summary tells you how to open it by hand.
 
 Create a fine-grained personal access token scoped to this repository, with
 **Contents: read and write** and **Pull requests: read and write**, then:
