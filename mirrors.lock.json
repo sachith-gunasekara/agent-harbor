@@ -47,6 +47,18 @@
       "skill": "verification-before-completion",
       "synced_at": "2026-09-04T06:05:07Z",
       "tree": "a4cb0b69aaefeab540947a7f1642bdaad810e37a"
+    },
+    "writing-skills": {
+      "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "homepage": "https://github.com/obra/superpowers",
+      "license": "MIT",
+      "notes": "How to author a skill that actually fires and holds up when followed.",
+      "path": "skills/writing-skills",
+      "ref": "main",
+      "repo": "obra/superpowers",
+      "skill": "writing-skills",
+      "synced_at": "2026-09-05T11:03:16Z",
+      "tree": "1768f7552ec98fc6b06aeea747a0c4ef6bde0473"
     }
   },
   "version": 1
