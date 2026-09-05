@@ -15,9 +15,15 @@ name: mirror-sync
 on:
   push:
     branches: [main]
+    # Every script the job actually runs belongs here. gen-catalog.sh and
+    # validate-skills.sh were missing, so fixing either of them did not re-run the
+    # sync — a mirror left stuck by a validation bug stayed stuck after the bug was
+    # fixed, until someone dispatched the workflow by hand.
     paths:
       - mirrors.yaml
       - scripts/sync-mirrors.sh
+      - scripts/gen-catalog.sh
+      - scripts/validate-skills.sh
       - .github/workflows/mirror-sync.yml
   schedule:
     - cron: "17 6 * * 1" # Mondays, 06:17 UTC
@@ -52,7 +58,13 @@ jobs:
       changed: ${{ steps.plan.outputs.changed }}
       any: ${{ steps.plan.outputs.any }}
     steps:
+      # Explicitly the tip of main, not github.sha. The default would pin the job
+      # to the commit that triggered it, so a fix merged seconds later is invisible
+      # and the sync runs with tooling it has already been told is wrong. Two
+      # merges landing close together is enough to hit this.
       - uses: actions/checkout@v5
+        with:
+          ref: main
 
       - name: Install yq
         run: |
@@ -117,7 +129,10 @@ jobs:
             echo "::warning::MIRROR_PAT is not set. Falling back to GITHUB_TOKEN, which needs 'Allow GitHub Actions to create and approve pull requests' enabled in Settings > Actions > General, and will not trigger validate.yml on the pull request it opens."
           fi
 
+      # Tip of main, for the same reason as the detect job above.
       - uses: actions/checkout@v5
+        with:
+          ref: main
 
       - name: Install yq
         run: |
