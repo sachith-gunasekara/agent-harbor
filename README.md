@@ -73,6 +73,7 @@ these in place; see [docs/mirroring.md](docs/mirroring.md).
 | [`find-skills`](skills/mirrored/find-skills) | [vercel-labs/skills](https://github.com/vercel-labs/skills/tree/435076e78988e1e6ec40d00b0b1d76bdbbc5419a/skills/find-skills) `435076e` | MIT | Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. |
 | [`systematic-debugging`](skills/mirrored/systematic-debugging) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/systematic-debugging) `b36e082` | MIT | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes |
 | [`verification-before-completion`](skills/mirrored/verification-before-completion) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/verification-before-completion) `b36e082` | MIT | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always |
+| [`writing-skills`](skills/mirrored/writing-skills) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/writing-skills) `b36e082` | MIT | Use when creating new skills, editing existing skills, or verifying skills work before deployment |
 <!-- skills:end -->
 
 ## Layout

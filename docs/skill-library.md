@@ -65,3 +65,14 @@ Why it is here: Checks the work actually runs before calling it done, instead of
 - Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
 - License: MIT
 - Vendored at: [`skills/mirrored/verification-before-completion`](../skills/mirrored/verification-before-completion)
+
+### `writing-skills`
+
+Use when creating new skills, editing existing skills, or verifying skills work before deployment
+
+Why it is here: How to author a skill that actually fires and holds up when followed.
+
+- Upstream: [obra/superpowers/skills/writing-skills](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/writing-skills)
+- Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
+- License: MIT
+- Vendored at: [`skills/mirrored/writing-skills`](../skills/mirrored/writing-skills)
