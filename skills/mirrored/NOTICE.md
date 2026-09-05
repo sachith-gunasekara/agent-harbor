@@ -21,6 +21,12 @@ each mirrored directory stays byte-identical to its upstream.
 - License: MIT (see the LICENSE file in https://github.com/vercel-labs/skills)
 - Commit: 435076e78988e1e6ec40d00b0b1d76bdbbc5419a
 
+## python-test
+
+- Source: https://github.com/DeerHide/agent_skills/tree/14b1dd8b0a80e26b812a6120b06500d850a5a881/skills/python-test
+- License: MIT (see the LICENSE file in https://github.com/DeerHide/agent_skills)
+- Commit: 14b1dd8b0a80e26b812a6120b06500d850a5a881
+
 ## systematic-debugging
 
 - Source: https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/systematic-debugging

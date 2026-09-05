@@ -24,6 +24,18 @@
       "synced_at": "2026-09-03T07:55:26Z",
       "tree": "76a98a285cb0434f3d39e1a873823556330e398b"
     },
+    "python-test": {
+      "commit": "14b1dd8b0a80e26b812a6120b06500d850a5a881",
+      "homepage": "https://github.com/DeerHide/agent_skills",
+      "license": "MIT",
+      "notes": "pytest practice — unit, mocked-integration, and testcontainers layers.",
+      "path": "skills/python-test",
+      "ref": "main",
+      "repo": "DeerHide/agent_skills",
+      "skill": "python-test",
+      "synced_at": "2026-09-05T11:03:31Z",
+      "tree": "4c20a5a4b76e2b939b644bc90ef7704e26d339c1"
+    },
     "systematic-debugging": {
       "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
       "homepage": "https://github.com/obra/superpowers",
