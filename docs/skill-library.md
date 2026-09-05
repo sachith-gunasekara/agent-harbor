@@ -44,6 +44,17 @@ Why it is here: Finds and installs agent skills, which is squarely this repo's b
 - License: MIT
 - Vendored at: [`skills/mirrored/find-skills`](../skills/mirrored/find-skills)
 
+### `python-test`
+
+Best practices and patterns for testing Python applications using pytest, pytest-xdist, and testcontainers. Covers unit testing, integration testing with mocks, and integration testing with real resources.
+
+Why it is here: pytest practice — unit, mocked-integration, and testcontainers layers.
+
+- Upstream: [DeerHide/agent_skills/skills/python-test](https://github.com/DeerHide/agent_skills/tree/14b1dd8b0a80e26b812a6120b06500d850a5a881/skills/python-test)
+- Pinned commit: `14b1dd8b0a80e26b812a6120b06500d850a5a881`
+- License: MIT
+- Vendored at: [`skills/mirrored/python-test`](../skills/mirrored/python-test)
+
 ### `systematic-debugging`
 
 Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
