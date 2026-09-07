@@ -20,6 +20,19 @@ marketplace, or gets copied by hand into whatever directory your agent reads.
   kept in sync automatically. Declared in [`mirrors.yaml`](mirrors.yaml); see
   [docs/mirroring.md](docs/mirroring.md).
 
+## Contents
+
+- [Why this exists](#why-this-exists)
+- [Install](#install) — [as a Claude Code plugin](#as-a-claude-code-plugin) · [by hand](#by-hand)
+- [Skills](#skills) — what's published here right now
+- [Run your own harbor](#run-your-own-harbor) — [add your own](#add-a-skill-you-wrote) ·
+  [borrow one](#borrow-a-skill-someone-else-wrote) ·
+  [live with borrowed ones](#living-with-borrowed-skills)
+- [Docs](#docs)
+- [Maintenance](#maintenance) — [layout](#repository-layout) ·
+  [tooling and checks](#tooling-and-checks)
+- [License](#license)
+
 ## Why this exists
 
 Skills accumulate faster than anyone tracks them. You write two or three of your own,
@@ -166,7 +179,21 @@ plus CI will stop you), and **never hand-edit a generated region** — the READM
 [docs/skill-library.md](docs/skill-library.md), `NOTICE.md` and the plugin manifests all
 come from the skills themselves.
 
-## Layout
+## Docs
+
+| Doc | Read it when |
+|---|---|
+| [adding-a-skill.md](docs/adding-a-skill.md) | You're writing a skill here — frontmatter, what goes in `scripts/` versus `references/`, how to get it registered and reviewed. |
+| [mirroring.md](docs/mirroring.md) | You're vendoring someone else's skill — every `mirrors.yaml` field, pinning, removal, name collisions, licensing, and what the sync does step by step. |
+| [skill-library.md](docs/skill-library.md) | You want the full description and provenance of every published skill, not the one-line table above. Generated. |
+| [`mirrors.yaml`](mirrors.yaml) | The commented source of truth for what is mirrored. |
+
+## Maintenance
+
+Everything below is bookkeeping. You do not need any of it to install a skill or to add
+one — the hooks and CI handle it.
+
+### Repository layout
 
 ```
 mirrors.yaml            # which upstream skills to mirror — the only file you edit to add one
@@ -186,15 +213,7 @@ scripts/                # repo tooling (sync, validate, catalog) — not skill s
 Scripts are run, not read — they keep deterministic work out of the context window.
 References are pulled in only when the task actually needs them.
 
-Anything under `skills/mirrored/` is a byte-for-byte copy of upstream and is
-overwritten on every sync — never edit it in place. To diverge from upstream, fork the
-skill into `skills/own/` and drop the mirror entry.
-
-See [docs/adding-a-skill.md](docs/adding-a-skill.md) for the conventions a new skill in
-this repo should follow, and [docs/mirroring.md](docs/mirroring.md) for how mirroring
-works.
-
-## Repo tooling
+### Tooling and checks
 
 Set up once, and the rest is automatic:
 
