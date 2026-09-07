@@ -123,6 +123,7 @@ these in place; see [docs/mirroring.md](docs/mirroring.md).
 | [`python-test`](skills/mirrored/python-test) | [DeerHide/agent_skills](https://github.com/DeerHide/agent_skills/tree/14b1dd8b0a80e26b812a6120b06500d850a5a881/skills/python-test) `14b1dd8` | MIT | Best practices and patterns for testing Python applications using pytest, pytest-xdist, and testcontainers. |
 | [`systematic-debugging`](skills/mirrored/systematic-debugging) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/systematic-debugging) `b36e082` | MIT | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes |
 | [`verification-before-completion`](skills/mirrored/verification-before-completion) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/verification-before-completion) `b36e082` | MIT | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always |
+| [`writing-skills`](skills/mirrored/writing-skills) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/writing-skills) `b36e082` | MIT | Use when creating new skills, editing existing skills, or verifying skills work before deployment |
 <!-- skills:end -->
 
 ## Run your own harbor
