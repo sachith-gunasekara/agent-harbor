@@ -110,6 +110,62 @@ these in place; see [docs/mirroring.md](docs/mirroring.md).
 | [`verification-before-completion`](skills/mirrored/verification-before-completion) | [obra/superpowers](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/verification-before-completion) `b36e082` | MIT | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always |
 <!-- skills:end -->
 
+## Run your own harbor
+
+Fork this repo — the tooling, the sync workflow and the checks come with it, and every
+install command above becomes `npx skills add <you>/<your-fork>`. Then there are only
+ever two moves.
+
+### Add a skill you wrote
+
+Drop it in `skills/own/<skill-name>/` with a `SKILL.md`, and let the tooling register
+it:
+
+```bash
+mkdir -p skills/own/my-skill && $EDITOR skills/own/my-skill/SKILL.md
+./scripts/gen-catalog.sh     # rewrites the README table, catalog and plugin manifests
+```
+
+The conventions worth following — how to write a description that actually triggers,
+what belongs in `scripts/` versus `references/` — are in
+[docs/adding-a-skill.md](docs/adding-a-skill.md).
+
+### Borrow a skill someone else wrote
+
+You never copy files in. You add four lines to [`mirrors.yaml`](mirrors.yaml) and merge
+them:
+
+```yaml
+  - repo: obra/superpowers
+    skill: brainstorming
+    ref: main          # or a tag, or a full SHA to freeze it
+    license: MIT       # required — mirroring is redistribution
+    notes: Structured idea generation before committing to an approach.
+```
+
+On merge, `mirror-sync` clones the upstream, resolves the skill wherever it lives in
+that repo, vendors it verbatim into `skills/mirrored/`, records the exact commit in
+`mirrors.lock.json`, and opens the PR that adds it. Full workflow, including name
+collisions and license handling, in [docs/mirroring.md](docs/mirroring.md).
+
+### Living with borrowed skills
+
+This is the part that usually rots, so it is automated:
+
+| What happens | What you do |
+|---|---|
+| Upstream changes | Nothing. The sync runs weekly, and opens **one PR per skill that actually changed**, with the upstream diff. Merge it or close it — closing keeps your pinned copy. |
+| You want a skill frozen | Put a full SHA in `ref:`. It will never open a PR again until you change that line. |
+| The author moved it to a new repo | Change `repo:` (and `skill:` if it was renamed). The next sync re-vendors it from the new home; the old copy is pruned. |
+| You want to *change* a borrowed skill | `git mv skills/mirrored/<name> skills/own/<name>`, delete its `mirrors.yaml` entry, edit freely. It is yours now, and you have given up automatic updates — a deliberate trade, not an accident. |
+| You stop using it | Delete the entry. The next sync opens a PR removing the directory, the lock entry and every generated row. Re-adding it later re-vendors from scratch. |
+
+Two rules hold the whole thing together: **never edit anything under
+`skills/mirrored/`** (it is overwritten wholesale on every sync, and a pre-commit hook
+plus CI will stop you), and **never hand-edit a generated region** — the README table,
+[docs/skill-library.md](docs/skill-library.md), `NOTICE.md` and the plugin manifests all
+come from the skills themselves.
+
 ## Layout
 
 ```
