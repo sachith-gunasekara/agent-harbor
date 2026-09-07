@@ -52,6 +52,11 @@ jobs:
         # CI has to invoke it explicitly. Offline — uses local fixture repos.
         run: ./scripts/test-sync.sh
 
+      - name: init-template test suite
+        # Same deal: pre-push locally, explicit here. Rebrands throwaway copies of
+        # the checkout, never the checkout itself.
+        run: ./scripts/test-init-template.sh
+
       - name: Skills are discoverable
         # Not a lint: proves the skills/own/ + skills/mirrored/ catalog layout is
         # still something an installer can resolve.
