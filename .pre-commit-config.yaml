@@ -85,3 +85,14 @@ repos:
         pass_filenames: false
         always_run: true
         stages: [pre-push]
+
+      - id: test-init-template
+        name: init-template test suite
+        description: >-
+          Rebrands throwaway copies of this repo rather than this repo, so it is
+          offline and read-only here. Also on push, for the same reason as above.
+        entry: ./scripts/test-init-template.sh
+        language: script
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
