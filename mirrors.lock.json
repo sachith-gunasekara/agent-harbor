@@ -13,7 +13,7 @@
       "tree": "881fc4ac82a25e61a58d332426b5673efe060da0"
     },
     "find-skills": {
-      "commit": "435076e78988e1e6ec40d00b0b1d76bdbbc5419a",
+      "commit": "1682051d48c34f5eb135e6475c1a965dce05e820",
       "homepage": "https://github.com/vercel-labs/skills",
       "license": "MIT",
       "notes": "Finds and installs agent skills, which is squarely this repo's business.",
@@ -21,7 +21,7 @@
       "ref": "main",
       "repo": "vercel-labs/skills",
       "skill": "find-skills",
-      "synced_at": "2026-09-03T07:55:26Z",
+      "synced_at": "2026-09-07T08:44:01Z",
       "tree": "76a98a285cb0434f3d39e1a873823556330e398b"
     },
     "python-test": {
