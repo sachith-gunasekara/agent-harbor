@@ -31,6 +31,13 @@ cd my-harbor
 
 ## 2. Make it yours
 
+**This usually happens on its own.** `.github/workflows/template-bootstrap.yml` runs on
+the copy's first push, rebrands it, commits the result, and deletes itself. It skips
+the repo it came from (a string comparison against the manifest's homepage, so renaming
+this repo cannot break it) and skips forks, which mean to stay linked. Delete that file
+before your first push if you would rather do it by hand — or if the bootstrap already
+ran and you want to change the answers, just run the script again:
+
 ```bash
 ./scripts/init-template.sh --dry-run     # what it would rewrite
 ./scripts/init-template.sh               # do it

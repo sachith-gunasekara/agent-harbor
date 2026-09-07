@@ -1,0 +1,107 @@
+name: template-bootstrap
+
+# Rebrands a copy of this repo the first time it pushes, then deletes itself.
+#
+# GitHub's "Use this template" copies the files and nothing else, so a fresh copy
+# still installs from the original slug and still names the original owner in its
+# plugin manifests. This runs scripts/init-template.sh once, commits the result,
+# and removes this workflow so it can never fire again.
+#
+# It has to be careful about three things, because it commits to the default
+# branch unattended:
+#
+#   the source repo   Never rebrands the repo it came from. The check is
+#                     data-driven: .claude-plugin/marketplace.json holds the
+#                     homepage, so "am I a copy?" is a string comparison against
+#                     github.repository rather than a slug pasted in here that
+#                     would go stale the moment this repo is renamed.
+#   forks             Skipped. A fork means to stay linked and send changes back;
+#                     rebranding it would conflict with every upstream merge.
+#   already done      init-template.sh exits early when the slug already matches,
+#                     so a re-run before the self-delete lands changes nothing.
+#
+# To opt out, delete this file before your first push.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: template-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    # A fork keeps its upstream link on purpose; only template copies get rebranded.
+    if: github.event.repository.fork != true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Am I a copy?
+        id: check
+        run: |
+          source_slug="$(jq -r '.plugins[0].homepage // ""' .claude-plugin/marketplace.json \
+            | sed 's#^https://github.com/##; s#/$##')"
+          echo "source repo: ${source_slug:-unknown}"
+          echo "this repo:   $GITHUB_REPOSITORY"
+          if [ -z "$source_slug" ] || [ "$source_slug" = "$GITHUB_REPOSITORY" ]; then
+            echo "Nothing to rebrand — this is the repo the template comes from."
+            echo "copy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "copy=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Rebrand
+        if: steps.check.outputs.copy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A display name if the account has one, the login otherwise. Accounts and
+          # organisations live at different endpoints, so try both before falling back.
+          owner="$GITHUB_REPOSITORY_OWNER"
+          name="$(gh api "users/$owner" --jq '.name // ""' 2>/dev/null || true)"
+          if [ -z "$name" ]; then
+            name="$(gh api "orgs/$owner" --jq '.name // ""' 2>/dev/null || true)"
+          fi
+          if [ -z "$name" ]; then name="$owner"; fi
+
+          # Empty rather than the bot's address: a contact nobody reads is worse
+          # than a blank the owner fills in. The job summary says to fill it in.
+          ./scripts/init-template.sh \
+            --repo "$GITHUB_REPOSITORY" \
+            --owner-name "$name" \
+            --email "" \
+            --yes
+
+      - name: Commit and stand down
+        if: steps.check.outputs.copy == 'true'
+        run: |
+          git rm -q .github/workflows/template-bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -q \
+            -m "chore: make this repo mine" \
+            -m "Rebranded from the template by template-bootstrap.yml, which removes itself in this same commit."
+          git push origin HEAD:main
+
+          {
+            echo "### This repo is now \`$GITHUB_REPOSITORY\`"
+            echo ""
+            echo "Left for you:"
+            echo ""
+            echo "- \`LICENSE\` still carries the original copyright, as MIT requires. Add your own line."
+            echo "- \`.claude-plugin/marketplace.json\` has an empty \`owner.email\`."
+            echo "- The mirror sync needs a \`MIRROR_PAT\` secret and the \`mirror\` / \`automated\` labels — see \`docs/mirroring.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"
