@@ -25,7 +25,9 @@ marketplace, or gets copied by hand into whatever directory your agent reads.
 - [Why this exists](#why-this-exists)
 - [Install](#install) — [as a Claude Code plugin](#as-a-claude-code-plugin) · [by hand](#by-hand)
 - [Skills](#skills) — what's published here right now
-- [Run your own harbor](#run-your-own-harbor) — [add your own](#add-a-skill-you-wrote) ·
+- [Run your own harbor](#run-your-own-harbor) —
+  [start from the template](#start-from-the-template) ·
+  [add your own](#add-a-skill-you-wrote) ·
   [borrow one](#borrow-a-skill-someone-else-wrote) ·
   [live with borrowed ones](#living-with-borrowed-skills)
 - [Docs](#docs)
@@ -125,9 +127,27 @@ these in place; see [docs/mirroring.md](docs/mirroring.md).
 
 ## Run your own harbor
 
-Fork this repo — the tooling, the sync workflow and the checks come with it, and every
-install command above becomes `npx skills add <you>/<your-fork>`. Then there are only
-ever two moves.
+### Start from the template
+
+**Use this template** on GitHub — or fork it, if you would rather stay linked to this
+repo. Either way the tooling, the sync workflow and the checks come with it. Then make
+the copy yours:
+
+```bash
+gh repo create my-harbor --template sachith-gunasekara/agent-harbor --public --clone
+cd my-harbor
+./scripts/init-template.sh --dry-run   # what it would rewrite
+./scripts/init-template.sh             # your slug, your name, your manifests
+```
+
+That rewrites every mention of this repo across the README, docs, workflows and plugin
+manifests, regenerates the catalog and validates the result — so
+`npx skills add <you>/my-harbor` works and nothing still advertises me. Add `--fresh`
+to start with no skills at all. It leaves `LICENSE` and `skills/mirrored/` alone, for
+reasons [using-this-template.md](docs/using-this-template.md) explains, along with the
+`MIRROR_PAT` and label setup the sync needs.
+
+From there, there are only ever two moves.
 
 ### Add a skill you wrote
 
@@ -183,6 +203,7 @@ come from the skills themselves.
 
 | Doc | Read it when |
 |---|---|
+| [using-this-template.md](docs/using-this-template.md) | You want your own copy of this — template versus fork, what `init-template.sh` rewrites, the repo settings the sync needs, and how to pick up later scaffolding fixes. |
 | [adding-a-skill.md](docs/adding-a-skill.md) | You're writing a skill here — frontmatter, what goes in `scripts/` versus `references/`, how to get it registered and reviewed. |
 | [mirroring.md](docs/mirroring.md) | You're vendoring someone else's skill — every `mirrors.yaml` field, pinning, removal, name collisions, licensing, and what the sync does step by step. |
 | [skill-library.md](docs/skill-library.md) | You want the full description and provenance of every published skill, not the one-line table above. Generated. |
