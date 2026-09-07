@@ -1,14 +1,48 @@
 # agent-harbor
 
-Agent skills I write and reuse across coding agents, plus skills mirrored from other
-repos so everything installs from one place. Each one is a self-contained directory
-under [`skills/`](skills/) with a `SKILL.md` entry point, so it can be installed with
-`npx skills`, wired up as a Claude Code plugin marketplace, or just copied by hand.
+**A home port for the agent skills you write and the ones you borrow.** Keep your own
+skills in one repo, vendor the good ones you find elsewhere, and let CI watch upstream
+for you — then install the whole set into any agent with a single command.
+
+[![validate](https://img.shields.io/github/actions/workflow/status/sachith-gunasekara/agent-harbor/validate.yml?branch=main&label=validate)](https://github.com/sachith-gunasekara/agent-harbor/actions/workflows/validate.yml)
+[![mirror sync](https://img.shields.io/github/actions/workflow/status/sachith-gunasekara/agent-harbor/mirror-sync.yml?branch=main&label=mirror%20sync)](https://github.com/sachith-gunasekara/agent-harbor/actions/workflows/mirror-sync.yml)
+[![install with npx skills](https://img.shields.io/badge/install-npx%20skills-black)](#install)
+[![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin%20marketplace-d97757)](#as-a-claude-code-plugin)
+[![agent agnostic](https://img.shields.io/badge/agents-any%20that%20read%20SKILL.md-4c8eda)](#by-hand)
+[![license: MIT](https://img.shields.io/github/license/sachith-gunasekara/agent-harbor)](LICENSE)
+
+Every skill is a self-contained directory under [`skills/`](skills/) with a `SKILL.md`
+entry point, so it installs with `npx skills`, mounts as a Claude Code plugin
+marketplace, or gets copied by hand into whatever directory your agent reads.
 
 - [`skills/own/`](skills/own) — written and maintained here.
 - [`skills/mirrored/`](skills/mirrored) — vendored verbatim from upstream repos and
   kept in sync automatically. Declared in [`mirrors.yaml`](mirrors.yaml); see
   [docs/mirroring.md](docs/mirroring.md).
+
+## Why this exists
+
+Skills accumulate faster than anyone tracks them. You write two or three of your own,
+then find a dozen more scattered across other people's repos, copy the ones you like
+into `~/.claude/skills/`, and six months later you cannot say where any of them came
+from, which have been improved upstream, which were renamed or moved to a new repo, or
+which you quietly edited and can no longer tell apart from the original.
+
+This repo is the fix, and it is meant to be **forked and used as your own**:
+
+- **One place for everything you actually use.** Yours and other people's, installed
+  from a single source, with one command per agent instead of one copy per machine.
+- **Borrowed skills keep their provenance.** Each mirrored skill is pinned to an
+  upstream commit in [`mirrors.lock.json`](mirrors.lock.json), with its repo, license,
+  and a note on why you keep it around.
+- **Upstream changes arrive as a pull request, not a surprise.** A scheduled workflow
+  re-reads every upstream and opens one PR per skill that actually changed — so
+  adopting a new version is a decision you make on a diff. Skip it and your pinned
+  copy keeps working.
+- **Migrating and forking stay your call.** If an upstream author moves a skill to a
+  new repo, repoint one line in [`mirrors.yaml`](mirrors.yaml). If you want to change
+  a borrowed skill rather than track it, fork it into `skills/own/` and drop the
+  mirror — the repo stops chasing upstream for you and it becomes yours.
 
 ## Install
 
