@@ -37,7 +37,7 @@
       "tree": "4c20a5a4b76e2b939b644bc90ef7704e26d339c1"
     },
     "systematic-debugging": {
-      "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "commit": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
       "homepage": "https://github.com/obra/superpowers",
       "license": "MIT",
       "notes": "Root-cause debugging loop that resists guess-and-check fixes.",
@@ -45,8 +45,8 @@
       "ref": "main",
       "repo": "obra/superpowers",
       "skill": "systematic-debugging",
-      "synced_at": "2026-09-03T07:06:21Z",
-      "tree": "ab83fc82f82582e047d96fc516bac9bc03095ee0"
+      "synced_at": "2026-09-21T12:55:27Z",
+      "tree": "9a48dfda84bf339cba4b03fd803ba0dca2e158e3"
     },
     "verification-before-completion": {
       "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
