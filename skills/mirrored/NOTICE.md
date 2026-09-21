@@ -35,9 +35,9 @@ each mirrored directory stays byte-identical to its upstream.
 
 ## verification-before-completion
 
-- Source: https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/verification-before-completion
+- Source: https://github.com/obra/superpowers/tree/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/verification-before-completion
 - License: MIT (see the LICENSE file in https://github.com/obra/superpowers)
-- Commit: b36e0829c6d0140e93cfef2ca599b1b07d4a7797
+- Commit: 5bf4e78011075bcfc0dc295f0724994cd123ee71
 
 ## writing-skills
 
