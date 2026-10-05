@@ -39,8 +39,8 @@ Helps users discover and install agent skills when they ask questions like "how 
 
 Why it is here: Finds and installs agent skills, which is squarely this repo's business.
 
-- Upstream: [vercel-labs/skills/skills/find-skills](https://github.com/vercel-labs/skills/tree/1682051d48c34f5eb135e6475c1a965dce05e820/skills/find-skills)
-- Pinned commit: `1682051d48c34f5eb135e6475c1a965dce05e820`
+- Upstream: [vercel-labs/skills/skills/find-skills](https://github.com/vercel-labs/skills/tree/18f96ea131dab3b0fcc9b27cf7c6f6cbb6174680/skills/find-skills)
+- Pinned commit: `18f96ea131dab3b0fcc9b27cf7c6f6cbb6174680`
 - License: MIT
 - Vendored at: [`skills/mirrored/find-skills`](../skills/mirrored/find-skills)
 
