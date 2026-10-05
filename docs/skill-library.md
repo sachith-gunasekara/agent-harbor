@@ -28,8 +28,8 @@ You MUST use this before any creative work - creating features, building compone
 
 Why it is here: Structured idea generation before committing to an approach.
 
-- Upstream: [obra/superpowers/skills/brainstorming](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/brainstorming)
-- Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
+- Upstream: [obra/superpowers/skills/brainstorming](https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d/skills/brainstorming)
+- Pinned commit: `8ca22dba9a94f28898bbce59f2537ff4d87c747d`
 - License: MIT
 - Vendored at: [`skills/mirrored/brainstorming`](../skills/mirrored/brainstorming)
 
