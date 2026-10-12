@@ -17,9 +17,9 @@ each mirrored directory stays byte-identical to its upstream.
 
 ## find-skills
 
-- Source: https://github.com/vercel-labs/skills/tree/1682051d48c34f5eb135e6475c1a965dce05e820/skills/find-skills
+- Source: https://github.com/vercel-labs/skills/tree/13e4063a1cf913f5606d57d42ab83a86f5001e04/skills/find-skills
 - License: MIT (see the LICENSE file in https://github.com/vercel-labs/skills)
-- Commit: 1682051d48c34f5eb135e6475c1a965dce05e820
+- Commit: 13e4063a1cf913f5606d57d42ab83a86f5001e04
 
 ## python-test
 
