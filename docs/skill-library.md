@@ -72,8 +72,8 @@ Use when about to claim work is complete, fixed, or passing, before committing o
 
 Why it is here: Checks the work actually runs before calling it done, instead of assuming.
 
-- Upstream: [obra/superpowers/skills/verification-before-completion](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/verification-before-completion)
-- Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
+- Upstream: [obra/superpowers/skills/verification-before-completion](https://github.com/obra/superpowers/tree/bb92a77741419a4ab5f06e711a283343f1ada0c3/skills/verification-before-completion)
+- Pinned commit: `bb92a77741419a4ab5f06e711a283343f1ada0c3`
 - License: MIT
 - Vendored at: [`skills/mirrored/verification-before-completion`](../skills/mirrored/verification-before-completion)
 
