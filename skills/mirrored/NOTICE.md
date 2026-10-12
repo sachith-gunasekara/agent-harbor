@@ -41,6 +41,6 @@ each mirrored directory stays byte-identical to its upstream.
 
 ## writing-skills
 
-- Source: https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/writing-skills
+- Source: https://github.com/obra/superpowers/tree/bb92a77741419a4ab5f06e711a283343f1ada0c3/skills/writing-skills
 - License: MIT (see the LICENSE file in https://github.com/obra/superpowers)
-- Commit: b36e0829c6d0140e93cfef2ca599b1b07d4a7797
+- Commit: bb92a77741419a4ab5f06e711a283343f1ada0c3
