@@ -23,9 +23,9 @@ each mirrored directory stays byte-identical to its upstream.
 
 ## python-test
 
-- Source: https://github.com/DeerHide/agent_skills/tree/14b1dd8b0a80e26b812a6120b06500d850a5a881/skills/python-test
+- Source: https://github.com/DeerHide/agent_skills/tree/cd276f5a44476a5fe48a2bdda5a22c1dd00234d9/skills/python-test
 - License: MIT (see the LICENSE file in https://github.com/DeerHide/agent_skills)
-- Commit: 14b1dd8b0a80e26b812a6120b06500d850a5a881
+- Commit: cd276f5a44476a5fe48a2bdda5a22c1dd00234d9
 
 ## systematic-debugging
 
