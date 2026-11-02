@@ -24,12 +24,12 @@ automatically and must not be edited in this repo — see
 
 ### `brainstorming`
 
-You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.
+You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation).
 
 Why it is here: Structured idea generation before committing to an approach.
 
-- Upstream: [obra/superpowers/skills/brainstorming](https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/brainstorming)
-- Pinned commit: `b36e0829c6d0140e93cfef2ca599b1b07d4a7797`
+- Upstream: [obra/superpowers/skills/brainstorming](https://github.com/obra/superpowers/tree/2ce8aa15d05bd57213e6f746f953aafb7ded7a8b/skills/brainstorming)
+- Pinned commit: `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b`
 - License: MIT
 - Vendored at: [`skills/mirrored/brainstorming`](../skills/mirrored/brainstorming)
 
