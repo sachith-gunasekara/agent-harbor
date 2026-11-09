@@ -88,7 +88,12 @@ jobs:
           fi
           cat plan.json
 
-          changed="$(jq -c '[.[] | select(.state != "unchanged") | .name]' plan.json)"
+          # Open a PR only when the vendored contents actually differ from
+          # upstream (new, changed, removed). `relock` means the directory is
+          # already byte-identical and only the pinned commit hash moved because
+          # unrelated upstream files changed; that is not worth a review, and the
+          # lock metadata is refreshed for free on the next real change.
+          changed="$(jq -c '[.[] | select(.state != "unchanged" and .state != "relock") | .name]' plan.json)"
           {
             echo "changed=$changed"
             if [ "$(jq 'length' <<<"$changed")" -gt 0 ]; then
