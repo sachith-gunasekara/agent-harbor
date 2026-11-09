@@ -1,7 +1,7 @@
 {
   "mirrors": {
     "brainstorming": {
-      "commit": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "commit": "22f0b463e7a5e579904dd6211a520321035526f7",
       "homepage": "https://github.com/obra/superpowers",
       "license": "MIT",
       "notes": "Structured idea generation before committing to an approach.",
@@ -9,8 +9,8 @@
       "ref": "main",
       "repo": "obra/superpowers",
       "skill": "brainstorming",
-      "synced_at": "2026-09-03T07:06:18Z",
-      "tree": "881fc4ac82a25e61a58d332426b5673efe060da0"
+      "synced_at": "2026-11-09T16:30:00Z",
+      "tree": "ebd5b1afb600976b12a4c07fedd9c408c1e82f97"
     },
     "find-skills": {
       "commit": "1682051d48c34f5eb135e6475c1a965dce05e820",
