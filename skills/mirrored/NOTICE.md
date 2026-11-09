@@ -29,9 +29,9 @@ each mirrored directory stays byte-identical to its upstream.
 
 ## systematic-debugging
 
-- Source: https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797/skills/systematic-debugging
+- Source: https://github.com/obra/superpowers/tree/22f0b463e7a5e579904dd6211a520321035526f7/skills/systematic-debugging
 - License: MIT (see the LICENSE file in https://github.com/obra/superpowers)
-- Commit: b36e0829c6d0140e93cfef2ca599b1b07d4a7797
+- Commit: 22f0b463e7a5e579904dd6211a520321035526f7
 
 ## verification-before-completion
 
