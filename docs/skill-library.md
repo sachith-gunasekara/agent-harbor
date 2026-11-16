@@ -50,8 +50,8 @@ Best practices and patterns for testing Python applications using pytest, pytest
 
 Why it is here: pytest practice — unit, mocked-integration, and testcontainers layers.
 
-- Upstream: [DeerHide/agent_skills/skills/python-test](https://github.com/DeerHide/agent_skills/tree/14b1dd8b0a80e26b812a6120b06500d850a5a881/skills/python-test)
-- Pinned commit: `14b1dd8b0a80e26b812a6120b06500d850a5a881`
+- Upstream: [DeerHide/agent_skills/skills/python-test](https://github.com/DeerHide/agent_skills/tree/cd276f5a44476a5fe48a2bdda5a22c1dd00234d9/skills/python-test)
+- Pinned commit: `cd276f5a44476a5fe48a2bdda5a22c1dd00234d9`
 - License: MIT
 - Vendored at: [`skills/mirrored/python-test`](../skills/mirrored/python-test)
 
